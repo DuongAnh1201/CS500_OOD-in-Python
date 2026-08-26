@@ -1,7 +1,7 @@
 def convert(mins):
     hour = (mins//60)%24
     minute = (mins%60)
-    return f"{str(hour)}:{str(minute)}"
+    return f"{hour:02d}:{minute:02d}"
 def main():
     print("Finding the time before and after x minutes: ")
     #Get the input
