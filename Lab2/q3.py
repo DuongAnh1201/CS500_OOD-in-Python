@@ -14,12 +14,16 @@ def main():
     print("The sorted list: ")
     print(sorted_words)
     print("The unique word: ")
-    words.sort()
-    pre = ""
-    for word in words:
-        if word != pre:
-            print(word, end = ",")
-        pre = word
+    for i in range(len(words)):
+        f = False
+        for j in range(i):
+            if words[i] == words[j]:
+                f = True
+                break
+        if f == True:
+            continue
+        print(words[i])
+        
     print("\n")
     
             
