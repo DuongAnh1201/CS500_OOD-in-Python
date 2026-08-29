@@ -13,6 +13,7 @@ def main():
     sorted_words = sorted(words)
     print("The sorted list: ")
     print(sorted_words)
+    #Task 2: Print the Unique word.
     print("The unique word: ")
     for i in range(len(words)):
         f = False
