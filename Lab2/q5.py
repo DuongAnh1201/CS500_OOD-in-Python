@@ -1,6 +1,6 @@
-def rectangle_of_symbols(height: int, weight: int, symbol:str = "*") -> None:
-    for i in range(height):
-        for j in range(weight):
+def rectangle_of_symbols(height: int, weight: int, symbol:str) -> None:
+    for col in range(height):
+        for row in range(weight):
             print(symbol, end = "")
         print()
 
