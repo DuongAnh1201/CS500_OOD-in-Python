@@ -22,9 +22,12 @@ def main():
                 break
         if f == True:
             continue
-        print(words[i])
-        
+        if i == 0:
+            print(words[i], end = "")
+        else:
+            print(f", {words[i]}", end = "")
     print("\n")
+        
     
             
 
