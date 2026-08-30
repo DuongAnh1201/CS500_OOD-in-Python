@@ -25,6 +25,9 @@ def display(month: int, cd_value: float) -> None:
     '''
     print(f"{month:<15}{cd_value:,.2f}")
 def computing():
+    '''
+    Computation and printing out the result
+    '''
     initial_investment_amount, apy_in_percent, term, frequency = inp()
     print(f"Month          CD Value")
     print(f"-------        -------")

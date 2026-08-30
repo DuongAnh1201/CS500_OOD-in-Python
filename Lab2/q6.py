@@ -1,3 +1,6 @@
+'''
+    printing out a triangle with size of height and with chosen symbol
+'''
 def triangle_of_symbols(height: int, symbol: str = "*") -> None:
     #For each row in range of height
     for row in range(height):

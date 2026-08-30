@@ -1,3 +1,6 @@
+    '''
+    printing out a rectangle with size of height and weight with chosen symbol
+    '''
 def rectangle_of_symbols(height: int, weight: int, symbol:str) -> None:
     #For each row 
     for row in range(height):
