@@ -1,6 +1,9 @@
 def triangle_of_symbols(height: int, symbol: str = "*") -> None:
+    #For each row in range of height
     for row in range(height):
+        #The space before the first symbol
         spaces = " " * (height - row - 1)
+        #Number of symbol in the row
         symbols = symbol * (2 * row + 1)
         print(spaces + symbols)
 
