@@ -11,12 +11,17 @@ def create_parking_lot(size: int) -> list:
     # with randomly assigned parking space values.
     # This function returns a two-dimensional list.
     '''
-    parking = [[EMPTY] * size for _ in range(size)] 
-    for row in range(size):
-        for col in range(size):
-            parking[row][col] = random.randint(0,2)
-    return parking
+    parking = []
 
+    for row in range(size):
+        new_row = []
+
+        for col in range(size):
+            new_row.append(random.randint(0, 2))
+
+        parking.append(new_row)
+
+    return parking
 
 def print_parking_lot(parking_lot: list) -> None:
     ''' 
