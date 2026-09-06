@@ -10,8 +10,7 @@ def is_prime(upper_limit: int) -> List:
     for i in range(2, upper_limit+1):
         if prime[i] == True:
             for j in range(i*2, upper_limit, i):
-                if j%i==0:
-                    prime[j] = False
+                prime[j] = False
     return prime
     
 def main():
