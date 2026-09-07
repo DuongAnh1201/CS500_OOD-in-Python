@@ -1,19 +1,19 @@
 def merge(l1, l2):
-    i = 0 
-    j = 0
+    ind_1 = 0 
+    ind_2 = 0
     result = []
-    while i<len(l1) and j<len(l2):
-        if l1[i]<=l2[j]:
-            result.append(l1[i])
-            i+=1
+    while ind_1<len(l1) and ind_2<len(l2):
+        if l1[ind_1]<=l2[ind_2]:
+            result.append(l1[ind_1])
+            ind_1+=1
         else:
-            result.append(l2[j])
-            j+=1
-    if i == len(l1):
-        for k in range(j, len(l2)):
+            result.append(l2[ind_2])
+            ind_2+=1
+    if ind_1 == len(l1):
+        for k in range(ind_2, len(l2)):
             result.append(l2[k])
     else:
-        for k in range(i, len(l1)):
+        for k in range(ind_1, len(l1)):
             result.append(l1[k])
 
     return result
