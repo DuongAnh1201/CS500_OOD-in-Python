@@ -38,6 +38,7 @@ class Customer:
     @property
     def address(self) -> str:
         return self.__address
+        
     @address.setter
     def address(self, address) -> None:
         self.__address = address
@@ -50,7 +51,7 @@ class Customer:
 
     def __eq__(self, value: object) -> bool:
         if isinstance(value, Customer):
-            return self.__name == value.__name and self.__address == value.__address
+            return self.__name == value.name and self.__address == value.address
         return False
 
 class OrderItem:
@@ -115,7 +116,7 @@ class Order:
                     largest = item
                     total = total_item
         return largest
-        
+
             
 
 
