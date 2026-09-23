@@ -41,3 +41,12 @@ class ApplicationStatus(Enum):
     REJECTED = 2
     ACCEPTED = 3
 
+class Extracurricular:
+    def __init__(self, activity_name: str, description:str = ""):
+        self.__activity_name = activity_name
+        self.__description = description
+
+    def __str__(self) -> str:
+        return f"Activity name: {self.__activity_name}\nDescription: {self.__description}"
+
+
