@@ -50,11 +50,21 @@ class Extracurricular:
         return f"Activity name: {self.__activity_name}\nDescription: {self.__description}"
 
 class PreviousEducation:
-    def __init__(self, institution: str, degree: str, year_completed: int):
+    def __init__(self, institution: str, degree: str, year_completed: int) -> None:
         self.__institution = institution
         self.__degree = degree
         self.__year_completed = year_completed
 
     def __str__(self) -> str:
         return f"Institution: {self.__institution}\nDegree/Level: {self.__degree}\nYear completed: {self.__year_completed}\n"
+
+class Program:
+    def __init__(self, program_name: str) -> None:
+        self.__program_name = program_name
+
+    @property
+    def program_name(self) -> str:
+        return self.__program_name
+    def __str__(self) -> str:
+        return f"Program: {self.__program_name}\n"
 
