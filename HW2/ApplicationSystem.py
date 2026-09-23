@@ -42,10 +42,16 @@ class ApplicationStatus(Enum):
     ACCEPTED = 3
 
 class Extracurricular:
+    extracurricular_id = 0
     def __init__(self, activity_name: str, description:str = ""):
+        extracurricular_id += 1
+        self.__extracurricular_id = extracurricular_id
         self.__activity_name = activity_name
         self.__description = description
 
+    @property
+    def extracurricular_id(self) -> int:
+        return self.__extracurricular_id
     def __str__(self) -> str:
         return f"Activity name: {self.__activity_name}\nDescription: {self.__description}"
 
@@ -84,12 +90,27 @@ class Application:
         output += f"Application_id: {self.__application_id}\nApplicant: {self.__applicant}\nProgram Applied: {self.__program_applied}\nApplication status: {self.__status}\n"
         output += ("\nThe Applicant has the following extracurricular: \n")
         for extracurricular in self.__extracurricular_list:
-            output += f"{extracurricular}\n")
+            output += f"{extracurricular}\n"
 
         output += ("\nThe Applicant has the Previous Education: \n")
         for prev_edu in self.__previous_education_list:
             output+= f"{prev_edu}\n"
         return output
 
+    ''' Implementing the methods defined in the UML for adding and removing extracurricular activities aswsociated with an application'''
+    def add_extracurricular(self, extracurricular):
+        if isinstance(extracurricular, Extracurricular):
+            self.__extracurricular_list.append(extracurricular)
+            print(f"New extracurricular: {extracurricular} has been added")
 
+    #Remove an extracurricular by its ID
+    def remove_extracurricular(self, extracurricular_id):
+        for i in range(len(self.__extracurricular_list)):
+            if self.__extracurricular_list[i].extracurricular_id == extracurricular_id:
+                self.__extracurricular_list[i], self.__extracurricular_list[-1] = self.__extracurricular_list[-1], self.__extracurricular_list[i]
+                self.__extracurricular_list.pop()
+                print(f"Successfully removed the extracurricular with ID: {extracurricular_id}")
+                break
+
+    
     
