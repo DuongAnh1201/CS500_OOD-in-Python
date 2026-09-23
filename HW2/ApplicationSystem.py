@@ -68,3 +68,28 @@ class Program:
     def __str__(self) -> str:
         return f"Program: {self.__program_name}\n"
 
+class Application:
+    application_id = 0
+    def __init__(self, full_name: str, contact_number: str, email_address: str, address: str, program_applied: Program):
+        application_id += 1
+        self.__application_id = application_id
+        self.__applicant = Applicant(full_name, contact_number, email_address, address)
+        self.__program_applied = program_applied
+        self.__status = ApplicationStatus.PENDING
+        self.__extracurricular_list: list[Extracurricular] = []
+        self.__previous_education_list: list[PreviousEducation] = []
+
+    def __str__(self) -> str:
+        output = ""
+        output += f"Application_id: {self.__application_id}\nApplicant: {self.__applicant}\nProgram Applied: {self.__program_applied}\nApplication status: {self.__status}\n"
+        output += ("\nThe Applicant has the following extracurricular: \n")
+        for extracurricular in self.__extracurricular_list:
+            output += f"{extracurricular}\n")
+
+        output += ("\nThe Applicant has the Previous Education: \n")
+        for prev_edu in self.__previous_education_list:
+            output+= f"{prev_edu}\n"
+        return output
+
+
+    
