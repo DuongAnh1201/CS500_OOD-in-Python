@@ -144,4 +144,9 @@ class Application:
         self.__program_applied = new_program
         print("Update program applied")
 
+    def update_status(self, new_status: ApplicationStatus):
+        self.__status = new_status
+        print("New status is updated")
+
+    
     
