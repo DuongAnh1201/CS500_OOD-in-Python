@@ -150,6 +150,18 @@ class Application:
         self.__status = new_status
         print("New status is updated")
 
+class ApplicationSystem:
+    def __init__(self) -> None:
+        self.__application_list: list[Application] = []
+
+    def __str__(self) -> str:
+        output = "The Application System includes those Application: \n"
+        for application in self.__application_list:
+            output += f"{application}"
+        return output
+        
+
+     
 def main():
     print("========== Creating an application ==========")
     computer_science = Program("Computer Science")
