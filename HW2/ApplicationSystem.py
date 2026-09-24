@@ -42,7 +42,7 @@ class ApplicationStatus(Enum):
     ACCEPTED = 3
 
 class Extracurricular:
-    #The counter needs a different name than the extracurricular_id property below, which would shadow it
+    
     id_counter = 0
     def __init__(self, activity_name: str, description:str = ""):
         Extracurricular.id_counter += 1
@@ -57,7 +57,7 @@ class Extracurricular:
         return f"Activity name: {self.__activity_name}\nDescription: {self.__description}"
 
 class PreviousEducation:
-    #The counter needs a different name than the prev_edu_id property below, which would shadow it
+
     id_counter = 0
     def __init__(self, institution: str, degree: str, year_completed: int) -> None:
         PreviousEducation.id_counter += 1
@@ -101,7 +101,7 @@ class Application:
         self.__extracurricular_list: list[Extracurricular] = []
         self.__previous_education_list: list[PreviousEducation] = []
 
-    #Read only properties, so the ApplicationSystem can search an application without touching its private data
+ 
     @property
     def application_id(self) -> int:
         return self.__application_id
@@ -116,11 +116,11 @@ class Application:
         return self.__status
     @property
     def extracurricular_list(self) -> list[Extracurricular]:
-        #A copy, so nobody outside the Application can add to or remove from the list it owns
-        return list(self.__extracurricular_list)
+        
+        return self.__extracurricular_list
     @property
     def previous_education_list(self) -> list[PreviousEducation]:
-        return list(self.__previous_education_list)
+        return self.__previous_education_list
 
     def __str__(self) -> str:
         output = ""
@@ -216,6 +216,93 @@ class ApplicationSystem:
         print(f"Found {len(results)} application(s) for the search")
         return results
 
+    '''Find one application by its ID and let the user change it through a menu.
+       Every change goes through the methods of Application, so the Application keeps looking after its own data.'''
+    def update(self, application_id: int) -> None:
+        found_application: Application|None = None
+        for application in self.__application_list:
+            if application.application_id == application_id:
+                found_application = application
+                break
+
+        #Handle an ID that is not in the system instead of crashing
+        if found_application is None:
+            print(f"We can't find any application with ID: {application_id}")
+            return
+
+        print(f"Updating the application with ID: {application_id}")
+        while True:
+            print("\nWhat do you want to update?")
+            print("1. Change the program applied for")
+            print("2. Update the application status")
+            print("3. Add an extracurricular activity")
+            print("4. Remove an extracurricular activity")
+            print("5. Add a previous education record")
+            print("6. Remove a previous education record")
+            print("7. Show the application")
+            print("0. Finish updating")
+            choice = input("Your choice: ")
+
+            if choice == "1":
+                new_program = input("The new program name: ")
+                found_application.change_program(Program(new_program))
+
+            elif choice == "2":
+                print("The statuses are:")
+                for status in ApplicationStatus:
+                    print(f"- {status.name}")
+                new_status = input("The new status: ").upper()
+                chosen_status = None
+                for status in ApplicationStatus:
+                    if status.name == new_status:
+                        chosen_status = status
+                        break
+                if chosen_status is None:
+                    print(f"{new_status} is not one of the statuses")
+                else:
+                    found_application.update_status(chosen_status)
+
+            elif choice == "3":
+                activity_name = input("The activity name: ")
+                description = input("The description: ")
+                found_application.add_extracurricular(activity_name, description)
+
+            elif choice == "4":
+                #Show what is there, so the user knows which ID to type
+                print("The extracurricular activities are:")
+                for extracurricular in found_application.extracurricular_list:
+                    print(f"- ID {extracurricular.extracurricular_id}: {extracurricular}")
+                extracurricular_id = input("The ID to remove: ")
+                
+                found_application.remove_extracurricular(int(extracurricular_id))
+
+            elif choice == "5":
+                institution = input("The institution: ")
+                degree = input("The degree: ")
+                year_completed = input("The year completed: ")
+                if year_completed.isdigit():
+                    found_application.add_prev_edu(institution, degree, int(year_completed))
+                else:
+                    print("The year has to be a number")
+
+            elif choice == "6":
+                print("The previous education records are:")
+                for record in found_application.previous_education_list:
+                    print(f"- ID {record.prev_edu_id}: {record}")
+                prev_edu_id = input("The ID to remove: ")
+                found_application.remove_prev_edu(int(prev_edu_id))
+            
+            elif choice == "7":
+                print(found_application)
+
+            elif choice == "0":
+                print(f"Finished updating the application with ID: {application_id}")
+                break
+
+            else:
+                print("That is not one of the choices, please try again")
+
+
 def main():
     print("========== Creating an application ==========")
     computer_science = Program("Computer Science")
@@ -282,6 +369,13 @@ def main():
 
     print("========== Searching for something that is not there ==========")
     system.search(applicant_name="Nobody At All")
+
+    print("\n========== Updating an application that is not in the system ==========")
+    system.update(99)
+
+    #This one is interactive, so it is the last thing main does. Answer 0 to finish.
+    print("\n========== Updating the application with ID 2 ==========")
+    system.update(2)
 
 
 if __name__ == "__main__":
