@@ -56,11 +56,16 @@ class Extracurricular:
         return f"Activity name: {self.__activity_name}\nDescription: {self.__description}"
 
 class PreviousEducation:
+    prev_edu_id = 0
     def __init__(self, institution: str, degree: str, year_completed: int) -> None:
+        prev_edu_id += 1
+        self.__prev_edu_id = prev_edu_id
         self.__institution = institution
         self.__degree = degree
         self.__year_completed = year_completed
-
+    @property
+    def prev_edu_id(self) -> int:
+        return self.__prev_edu_id
     def __str__(self) -> str:
         return f"Institution: {self.__institution}\nDegree/Level: {self.__degree}\nYear completed: {self.__year_completed}\n"
 
@@ -97,20 +102,40 @@ class Application:
             output+= f"{prev_edu}\n"
         return output
 
-    ''' Implementing the methods defined in the UML for adding and removing extracurricular activities aswsociated with an application'''
-    def add_extracurricular(self, extracurricular):
-        if isinstance(extracurricular, Extracurricular):
-            self.__extracurricular_list.append(extracurricular)
-            print(f"New extracurricular: {extracurricular} has been added")
+    ''' Implementing the methods defined in the UML for adding and removing extracurricular activities aswsociated with an application -> Composition'''
+    def add_extracurricular(self, activity_name: str, description: str) -> None:
+        extracurricular = Extracurricular(activity_name, description)
+        self.__extracurricular_list.append(extracurricular)
+        print(f"New extracurricular: {extracurricular} has been added")
 
     #Remove an extracurricular by its ID
     def remove_extracurricular(self, extracurricular_id):
+        f: bool = False
         for i in range(len(self.__extracurricular_list)):
             if self.__extracurricular_list[i].extracurricular_id == extracurricular_id:
                 self.__extracurricular_list[i], self.__extracurricular_list[-1] = self.__extracurricular_list[-1], self.__extracurricular_list[i]
                 self.__extracurricular_list.pop()
                 print(f"Successfully removed the extracurricular with ID: {extracurricular_id}")
+                f = True
                 break
+        if f == False:
+            print(f"We can't find any curricular with ID: {extracurricular_id}")
 
-    
-    
+    '''Implementing the methods defined in the UML for adding and removing Previous Education Management associated with an application -> Composition'''
+    def add_prev_edu(self, institution: str, degree: str, year_completed: int) -> None:
+        prev_edu = PreviousEducation(institution, degree, year_completed)
+        self.__previous_education_list.append(prev_edu)
+        print(f"New previous education: {prev_edu} has been added")
+
+    #Remove a previous education by its ID
+    def remove_prev_edu(self, prev_edu_id):
+        f: bool = False
+        for i in range(len(self.__previous_education_list)):
+            if self.__previous_education_list[i].prev_edu_id == prev_edu_id:
+                self.__previous_education_list[i], self.__previous_education_list[-1] = self.__previous_education_list[-1], self.__previous_education_list[i]
+                self.__previous_education_list.pop()
+                print(f"Successfully removed the previous education with ID: {prev_edu_id}")
+                f = True
+                break
+        if f == False:
+            print(f"We can't find any previous education with ID: {prev_edu_id}")
