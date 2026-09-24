@@ -302,6 +302,19 @@ class ApplicationSystem:
             else:
                 print("That is not one of the choices, please try again")
 
+    #Delete one application from the system by its ID
+    def delete(self, application_id: int) -> None:
+        f: bool = False
+        for i in range(len(self.__application_list)):
+            if self.__application_list[i].application_id == application_id:
+                self.__application_list[i], self.__application_list[-1] = self.__application_list[-1], self.__application_list[i]
+                self.__application_list.pop()
+                print(f"Successfully deleted the application with ID: {application_id}")
+                f = True
+                break
+        if f == False:
+            print(f"We can't find any application with ID: {application_id}")
+
 
 def main():
     print("========== Creating an application ==========")
@@ -369,6 +382,14 @@ def main():
 
     print("========== Searching for something that is not there ==========")
     system.search(applicant_name="Nobody At All")
+
+    print("\n========== Deleting an application ==========")
+    system.delete(3)
+    #Cara is gone, Ann and Bob are still there and unchanged
+    print(system)
+
+    print("========== Deleting an application that is not in the system ==========")
+    system.delete(99)
 
     print("\n========== Updating an application that is not in the system ==========")
     system.update(99)
