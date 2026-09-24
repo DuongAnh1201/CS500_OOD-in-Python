@@ -68,6 +68,15 @@ class PreviousEducation:
     @property
     def prev_edu_id(self) -> int:
         return self.__prev_edu_id
+    @property
+    def institution(self) -> str:
+        return self.__institution
+    @property
+    def degree(self) -> str:
+        return self.__degree
+    @property
+    def year_completed(self) -> int:
+        return self.__year_completed
     def __str__(self) -> str:
         return f"Institution: {self.__institution}\nDegree/Level: {self.__degree}\nYear completed: {self.__year_completed}\n"
 
@@ -91,6 +100,27 @@ class Application:
         self.__status = ApplicationStatus.PENDING
         self.__extracurricular_list: list[Extracurricular] = []
         self.__previous_education_list: list[PreviousEducation] = []
+
+    #Read only properties, so the ApplicationSystem can search an application without touching its private data
+    @property
+    def application_id(self) -> int:
+        return self.__application_id
+    @property
+    def applicant(self) -> Applicant:
+        return self.__applicant
+    @property
+    def program_applied(self) -> Program:
+        return self.__program_applied
+    @property
+    def status(self) -> ApplicationStatus:
+        return self.__status
+    @property
+    def extracurricular_list(self) -> list[Extracurricular]:
+        #A copy, so nobody outside the Application can add to or remove from the list it owns
+        return list(self.__extracurricular_list)
+    @property
+    def previous_education_list(self) -> list[PreviousEducation]:
+        return list(self.__previous_education_list)
 
     def __str__(self) -> str:
         output = ""
@@ -167,10 +197,25 @@ class ApplicationSystem:
         else:
             print("Wrong type of object, can't add a new application")
 
-    def 
+    def search(self, applicant_name: str|None = None, program_applied: str|None = None, prev_edu: str|None = None ) -> list[Application]:
+        results: list[Application] = []
+        for application in self.__application_list:
+            if applicant_name is not None and application.applicant.full_name != applicant_name:
+                continue
+            if program_applied is not None and application.program_applied.program_name != program_applied:
+                continue
+            #Add every application that has a record from the same previous education
+            if prev_edu is not None:
+                for record in application.previous_education_list:
+                    if record.institution == prev_edu:
+                        results.append(application)
+                        break
+            else:
+                results.append(application)
 
+        print(f"Found {len(results)} application(s) for the search")
+        return results
 
-     
 def main():
     print("========== Creating an application ==========")
     computer_science = Program("Computer Science")
@@ -206,6 +251,37 @@ def main():
 
     print("\n========== The final application ==========")
     print(application)
+
+    print("========== Putting three applications into the system ==========")
+    system = ApplicationSystem()
+    system.add(application)
+
+    bob = Application("Bob Tran", "555-0199", "bob@example.com", "2 Oak Ave", Program("Data Science"))
+    bob.add_prev_edu("City College", "Associate Degree", 2020)
+    system.add(bob)
+
+    cara = Application("Cara Diaz", "555-0123", "cara@example.com", "3 Pine Rd", Program("Data Science"))
+    cara.add_prev_edu("SFBU", "BSc Computer Science", 2023)
+    system.add(cara)
+
+    print("\n========== Searching by applicant name ==========")
+    for found in system.search(applicant_name="Bob Tran"):
+        print(found)
+
+    print("========== Searching by program applied for ==========")
+    for found in system.search(program_applied="Data Science"):
+        print(found)
+
+    print("========== Searching by previous education ==========")
+    for found in system.search(prev_edu="City College"):
+        print(found)
+
+    print("========== Searching by several criteria at once ==========")
+    for found in system.search(program_applied="Data Science", prev_edu="SFBU"):
+        print(found)
+
+    print("========== Searching for something that is not there ==========")
+    system.search(applicant_name="Nobody At All")
 
 
 if __name__ == "__main__":
