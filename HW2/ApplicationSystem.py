@@ -315,6 +315,8 @@ class ApplicationSystem:
         if f == False:
             print(f"We can't find any application with ID: {application_id}")
 
+    def display(self) -> None:
+        print(self)
 
 def main():
     print("========== Creating an application ==========")
