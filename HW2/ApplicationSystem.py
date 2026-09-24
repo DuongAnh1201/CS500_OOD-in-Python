@@ -139,3 +139,9 @@ class Application:
                 break
         if f == False:
             print(f"We can't find any previous education with ID: {prev_edu_id}")
+
+    def change_program(self, new_program: Program):
+        self.__program_applied = new_program
+        print("Update program applied")
+
+    
