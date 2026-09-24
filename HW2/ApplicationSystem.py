@@ -183,6 +183,33 @@ class Application:
 class ApplicationSystem:
     def __init__(self) -> None:
         self.__application_list: list[Application] = []
+        #The programs the college offers. Applications share these objects instead of making their own -> Aggregation
+        self.__program_list: list[Program] = []
+
+    @property
+    def program_list(self) -> list[Program]:
+        return self.__program_list
+
+    #The system does not build the Program, it is handed one that already exists -> Aggregation
+    def add_program(self, program: Program) -> None:
+        if isinstance(program, Program):
+            self.__program_list.append(program)
+        else:
+            print("Wrong type of object, can't add a new program")
+
+    #Show the programs offered and give back the one that is picked, so no new Program is created
+    def choose_a_program(self) -> Program|None:
+        if len(self.__program_list) == 0:
+            print("There is no program offered at the moment")
+            return None
+        while True:
+            print("The programs offered are:")
+            for i in range(len(self.__program_list)):
+                print(f"  {i + 1}. {self.__program_list[i].program_name}")
+            choice = input("Your choice: ").strip()
+            if choice.isdigit() and 1 <= int(choice) <= len(self.__program_list):
+                return self.__program_list[int(choice) - 1]
+            print("That is not one of the programs, please try again")
 
     def __str__(self) -> str:
         output = "The Application System includes those Application: \n"
@@ -216,8 +243,7 @@ class ApplicationSystem:
         print(f"Found {len(results)} application(s) for the search")
         return results
 
-    '''Find one application by its ID and let the user change it through a menu.
-       Every change goes through the methods of Application, so the Application keeps looking after its own data.'''
+    '''Find one application by its ID and let the user change it through a menu.'''
     def update(self, application_id: int) -> None:
         found_application: Application|None = None
         for application in self.__application_list:
@@ -244,8 +270,10 @@ class ApplicationSystem:
             choice = input("Your choice: ")
 
             if choice == "1":
-                new_program = input("The new program name: ")
-                found_application.change_program(Program(new_program))
+                #Pick one of the programs offered, the application does not get a Program of its own
+                new_program = self.choose_a_program()
+                if new_program is not None:
+                    found_application.change_program(new_program)
 
             elif choice == "2":
                 print("The statuses are:")
@@ -318,88 +346,143 @@ class ApplicationSystem:
     def display(self) -> None:
         print(self)
 
-def main():
-    print("========== Creating an application ==========")
-    computer_science = Program("Computer Science")
-    application = Application(
-        "Ann Lee", "555-0100", "ann@example.com", "1 Main St", computer_science
+
+class UserInterface:
+    PROGRAMS_OFFERED = (
+        "Computer Science",
+        "Data Science",
+        "Business Administration",
+        "Electrical Engineering",
     )
-    print(application)
 
-    print("========== Adding extracurricular activities ==========")
-    #The application creates the Extracurricular objects itself, it is not handed ready-made ones
-    application.add_extracurricular("Robotics Club", "Participated in robotics competitions")
-    application.add_extracurricular("Chess Team", "Played in regional tournaments")
-    application.add_extracurricular("Debate Club", "Practiced public speaking")
+    def __init__(self) -> None:
+        self.__system = ApplicationSystem()
+        for program_name in UserInterface.PROGRAMS_OFFERED:
+            self.__system.add_program(Program(program_name))
 
-    print("\n========== Adding previous education records ==========")
-    application.add_prev_edu("City College", "Associate Degree", 2021)
-    application.add_prev_edu("Lincoln High School", "High School Diploma", 2018)
+    def __ask_for_a_number(self, question: str) -> int:
+        while True:
+            answer = input(question)
+            if answer.isdigit():
+                return int(answer)
+            print("Please type a number")
 
-    print("\n========== The application so far ==========")
-    print(application)
+    def run(self) -> None:
+        print("=" * 55)
+        print("       ADMISSION APPLICATION SYSTEM (ADMIN)")
+        print("=" * 55)
+        while True:
+            print("\n---------------- ADMIN MENU ----------------")
+            print("1. Fill in a new admission application form")
+            print("2. Show all the applications")
+            print("3. Search the applications")
+            print("4. Update an application")
+            print("5. Delete an application")
+            print("0. Exit")
+            choice = input("Your choice: ")
+            if choice == "1":
+                self.add_application()
+            elif choice == "2":
+                self.__system.display()
+            elif choice == "3":
+                self.search_applications()
+            elif choice == "4":
+                application_id = self.__ask_for_a_number("The application ID to update: ")
+                self.__system.update(application_id)
+            elif choice == "5":
+                application_id = self.__ask_for_a_number("The application ID to delete: ")
+                self.__system.delete(application_id)
+            elif choice == "0":
+                print("Goodbye")
+                break
+            else:
+                print("That is not one of the choices, please try again")
 
-    print("========== Removing an extracurricular and a previous education ==========")
-    application.remove_extracurricular(2)
-    application.remove_prev_edu(2)
+    def add_application(self) -> None:
+        print("\n" + "=" * 55)
+        print("           ADMISSION APPLICATION FORM")
+        print("=" * 55)
 
-    print("\n========== Removing records that are not there ==========")
-    application.remove_extracurricular(99)
-    application.remove_prev_edu(99)
+        print("\nApplicant Information")
+        full_name = input("Full Name: ")
+        contact_number = input("Contact Number: ")
+        email_address = input("Email Address: ")
+        address = input(" Address: ")
 
-    print("\n========== Changing the program and the status ==========")
-    application.change_program(Program("Data Science"))
-    application.update_status(ApplicationStatus.ACCEPTED)
+        print("\nProgram Applied For")
+        #The applicant picks one of the programs the college offers -> Aggregation
+        program_applied = self.__system.choose_a_program()
+        application = Application(
+            full_name, contact_number, email_address, address, program_applied
+        )
 
-    print("\n========== The final application ==========")
-    print(application)
+        print("\nPrevious Education (can add multiple entries)")
+        print("  Press Enter on the institution when there are no more entries")
+        entry_number = 1
+        while True:
+            print(f"  {entry_number}.")
+            institution = input("Institution: ")
+            if institution == "":
+                break
+            degree = input("Degree/Level: ")
+            year_completed = self.__ask_for_a_number("Year Completed: ")
+            application.add_prev_edu(institution, degree, year_completed)
+            entry_number += 1
 
-    print("========== Putting three applications into the system ==========")
-    system = ApplicationSystem()
-    system.add(application)
+        print("\nExtracurricular Activities (can add multiple entries)\n")
+        print(" Press Enter on the activity name when there are no more entries")
+        entry_number = 1
+        while True:
+            print(f"  {entry_number}.")
+            activity_name = input("Activity Name: ")
+            if activity_name == "":
+                break
+            description = input("Description: ")
+            application.add_extracurricular(activity_name, description)
+            entry_number += 1
 
-    bob = Application("Bob Tran", "555-0199", "bob@example.com", "2 Oak Ave", Program("Data Science"))
-    bob.add_prev_edu("City College", "Associate Degree", 2020)
-    system.add(bob)
+        print("\nApplication Status (Admin Use Only)")
+        for status in ApplicationStatus:
+            print(f"  - {status.name}")
+        answer = input("  Status (press Enter to leave it PENDING): ").upper()
+        if answer != "":
+            chosen_status = None
+            for status in ApplicationStatus:
+                if status.name == answer:
+                    chosen_status = status
+                    break
+            if chosen_status is None:
+                print(f"  {answer} is not one of the statuses, the application stays PENDING")
+            else:
+                application.update_status(chosen_status)
 
-    cara = Application("Cara Diaz", "555-0123", "cara@example.com", "3 Pine Rd", Program("Data Science"))
-    cara.add_prev_edu("SFBU", "BSc Computer Science", 2023)
-    system.add(cara)
+        print()
+        signature = input("Signature of Applicant: ")
+        date = input("Date: ")
+        self.__system.add(application)
+        print("\n" + "-" * 55)
+        print("The application has been filed:")
+        print(application)
+        print(f"Signature of Applicant: {signature}")
+        print(f"Date: {date}")
+        print("-" * 55)
 
-    print("\n========== Searching by applicant name ==========")
-    for found in system.search(applicant_name="Bob Tran"):
-        print(found)
 
-    print("========== Searching by program applied for ==========")
-    for found in system.search(program_applied="Data Science"):
-        print(found)
+    def search_applications(self) -> None:
+        print("\nSearch the applications, press Enter to skip a criterion")
+        applicant_name = input("  Applicant name: ")
+        program_applied = input("  Program applied for: ")
+        prev_edu = input("  Previous education institution: ")
+        results = self.__system.search(
+            applicant_name if applicant_name != "" else None,
+            program_applied if program_applied != "" else None,
+            prev_edu if prev_edu != "" else None,
+        )
+        for application in results:
+            print(application)
 
-    print("========== Searching by previous education ==========")
-    for found in system.search(prev_edu="City College"):
-        print(found)
-
-    print("========== Searching by several criteria at once ==========")
-    for found in system.search(program_applied="Data Science", prev_edu="SFBU"):
-        print(found)
-
-    print("========== Searching for something that is not there ==========")
-    system.search(applicant_name="Nobody At All")
-
-    print("\n========== Deleting an application ==========")
-    system.delete(3)
-    #Cara is gone, Ann and Bob are still there and unchanged
-    print(system)
-
-    print("========== Deleting an application that is not in the system ==========")
-    system.delete(99)
-
-    print("\n========== Updating an application that is not in the system ==========")
-    system.update(99)
-
-    #This one is interactive, so it is the last thing main does. Answer 0 to finish.
-    print("\n========== Updating the application with ID 2 ==========")
-    system.update(2)
-
+def main():
+    UserInterface().run()
 
 if __name__ == "__main__":
     main()
