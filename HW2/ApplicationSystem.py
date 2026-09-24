@@ -9,7 +9,7 @@ class Applicant:
     @property
     def full_name(self) -> str:
         return self.__full_name
-    full_name.setter
+    @full_name.setter
     def full_name(self, new_full_name: str) -> None:
         self.__full_name = new_full_name
     @property
@@ -42,10 +42,11 @@ class ApplicationStatus(Enum):
     ACCEPTED = 3
 
 class Extracurricular:
-    extracurricular_id = 0
+    #The counter needs a different name than the extracurricular_id property below, which would shadow it
+    id_counter = 0
     def __init__(self, activity_name: str, description:str = ""):
-        extracurricular_id += 1
-        self.__extracurricular_id = extracurricular_id
+        Extracurricular.id_counter += 1
+        self.__extracurricular_id = Extracurricular.id_counter
         self.__activity_name = activity_name
         self.__description = description
 
@@ -56,10 +57,11 @@ class Extracurricular:
         return f"Activity name: {self.__activity_name}\nDescription: {self.__description}"
 
 class PreviousEducation:
-    prev_edu_id = 0
+    #The counter needs a different name than the prev_edu_id property below, which would shadow it
+    id_counter = 0
     def __init__(self, institution: str, degree: str, year_completed: int) -> None:
-        prev_edu_id += 1
-        self.__prev_edu_id = prev_edu_id
+        PreviousEducation.id_counter += 1
+        self.__prev_edu_id = PreviousEducation.id_counter
         self.__institution = institution
         self.__degree = degree
         self.__year_completed = year_completed
@@ -80,10 +82,10 @@ class Program:
         return f"Program: {self.__program_name}\n"
 
 class Application:
-    application_id = 0
+    id_counter = 0
     def __init__(self, full_name: str, contact_number: str, email_address: str, address: str, program_applied: Program):
-        application_id += 1
-        self.__application_id = application_id
+        Application.id_counter += 1
+        self.__application_id = Application.id_counter
         self.__applicant = Applicant(full_name, contact_number, email_address, address)
         self.__program_applied = program_applied
         self.__status = ApplicationStatus.PENDING
@@ -148,5 +150,42 @@ class Application:
         self.__status = new_status
         print("New status is updated")
 
-    
-    
+def main():
+    print("========== Creating an application ==========")
+    computer_science = Program("Computer Science")
+    application = Application(
+        "Ann Lee", "555-0100", "ann@example.com", "1 Main St", computer_science
+    )
+    print(application)
+
+    print("========== Adding extracurricular activities ==========")
+    #The application creates the Extracurricular objects itself, it is not handed ready-made ones
+    application.add_extracurricular("Robotics Club", "Participated in robotics competitions")
+    application.add_extracurricular("Chess Team", "Played in regional tournaments")
+    application.add_extracurricular("Debate Club", "Practiced public speaking")
+
+    print("\n========== Adding previous education records ==========")
+    application.add_prev_edu("City College", "Associate Degree", 2021)
+    application.add_prev_edu("Lincoln High School", "High School Diploma", 2018)
+
+    print("\n========== The application so far ==========")
+    print(application)
+
+    print("========== Removing an extracurricular and a previous education ==========")
+    application.remove_extracurricular(2)
+    application.remove_prev_edu(2)
+
+    print("\n========== Removing records that are not there ==========")
+    application.remove_extracurricular(99)
+    application.remove_prev_edu(99)
+
+    print("\n========== Changing the program and the status ==========")
+    application.change_program(Program("Data Science"))
+    application.update_status(ApplicationStatus.ACCEPTED)
+
+    print("\n========== The final application ==========")
+    print(application)
+
+
+if __name__ == "__main__":
+    main()
