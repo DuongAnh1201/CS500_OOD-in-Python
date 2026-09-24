@@ -160,6 +160,15 @@ class ApplicationSystem:
             output += f"{application}"
         return output
         
+    def add(self, application: Application) -> None:
+        if isinstance(application, Application):
+            self.__application_list.append(application)
+            print("Adding a new application successfully")
+        else:
+            print("Wrong type of object, can't add a new application")
+
+    def 
+
 
      
 def main():
