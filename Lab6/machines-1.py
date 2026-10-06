@@ -34,7 +34,18 @@ class Part(Displayable):
             return self.__partno == __value.__partno
         else:
             return False
-        
+
+class MovablePart(Part, Movable):
+    def __init__(self, partno, price, type) -> None:
+        Part.__init__(partno, price)
+        self.__type = type
+    def __str__(self) -> str:
+        return Part.__str__() + f"\nType: {self.__type}"
+    def display(self) -> None:
+        print(self)
+    def move(self):
+        print(f"partno: {Part.partno} is moving fast!")
+
 class Machine(Displayable):
     def __init__(self, machine_name: str) -> None:
         self.__machine_name = machine_name
@@ -48,7 +59,7 @@ class Machine(Displayable):
         self.__parts.append(part)
 
     def __str__(self) -> str:
-        output = f"Machine name: {self.__machine_name}
+        output = f"Machine name: {self.__machine_name}"
         for part in self.__parts:
             output += part + "\n"
         return output
@@ -69,13 +80,13 @@ class Machine(Displayable):
                 i+=1
 
     def get_duplicated_parts(self) -> dict[int, int]:
-        counters: dict[int, int]
+        counters: dict[int, int] = {}
         for part in self.__parts:
             if part.partno in counters:
                 counters[part.partno] += 1
             else:
                 counters[part.partno] = 1
-        result: dict[int, int]
+        result: dict[int, int] = {}
         for partno, occurences, in counters.items():
             if occurences > 1:
                 result[partno] = occurences
