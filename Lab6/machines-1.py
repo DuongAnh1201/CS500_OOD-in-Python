@@ -43,6 +43,9 @@ class MovablePart(Part, Movable):
         return Part.__str__() + f"\nType: {self.__type}"
     def display(self) -> None:
         print(self)
+    @property
+    def type(self):
+        return self.__type
     def move(self):
         print(f"partno: {Part.partno} is moving fast!")
 
@@ -130,9 +133,22 @@ class Robot(Machine, JetFighter):
         return expen_part
 
 
-        
+    def get_movable_parts_bytype(self) -> dict[str, list[Part]]:
+        movable_parts = {}
+        for part in Machine.parts:
+            if isinstance(part, MovablePart):
+                if part.type not in movable_parts:
+                    movable_parts[part.type] = [part]
+                else:
+                    movable_parts[part.type].append(part)
+        return movable_parts
 
-
+    def get_movable_parts(self) -> list[MovablePart]:
+        movable_parts = []
+        for part in Machine.parts:
+            if isinstance(part, MovablePart):
+                movable_parts.append(part)
+        return movable_parts
 
 def main():
     robo = Robot('MTX', 'M1X', 'F-16', 10000)
