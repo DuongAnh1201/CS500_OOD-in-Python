@@ -55,6 +55,10 @@ class Machine(Displayable):
     def machine_name(self) -> str:
         return self.__machine_name
 
+    @property
+    def parts(self) -> list:
+        return self.__parts
+
     def add_part(self, part: Part) -> None:
         self.__parts.append(part)
 
@@ -114,6 +118,20 @@ class Robot(Machine, JetFighter):
 
     def dowork(self) -> None:
         print(f"The Robot {self.machine_name} is assembling a big truck.")
+
+    def fly(self) -> None:
+        JetFighter.fly(self)
+
+    def get_expensive_parts(self, priceLimit: float) -> list[Part]:
+        expen_part = []
+        for part in Machine.parts:
+            if part.price>= priceLimit:
+                expen_part.append(part)
+        return expen_part
+
+
+        
+
 
 
 def main():
