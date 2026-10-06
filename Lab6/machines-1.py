@@ -115,9 +115,10 @@ class JetFighter(Displayable, Flyable):
         print(f"The JetFigher {self.__model} is flying in the sky!")
 
 class Robot(Machine, JetFighter):
-    def __init__(self, machine_name: str, cpu: str, model: str, speed: int) -> None:
+    def __init__(self, machine_name: str, cpu: str, model: str, speed: int, processor: str) -> None:
         Machine.__init__(self, machine_name)
         JetFighter.__init__(self, model, speed)
+        self.__processor = processor
 
     def dowork(self) -> None:
         print(f"The Robot {self.machine_name} is assembling a big truck.")
@@ -149,6 +150,12 @@ class Robot(Machine, JetFighter):
             if isinstance(part, MovablePart):
                 movable_parts.append(part)
         return movable_parts
+
+    def __str__(self) -> str:
+        return super().__str__() + f"\nProcessor: {self.__processor}"
+    
+    def display(self) -> None:
+        print(self)
 
 def main():
     robo = Robot('MTX', 'M1X', 'F-16', 10000)
