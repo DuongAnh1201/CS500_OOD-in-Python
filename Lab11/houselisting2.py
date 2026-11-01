@@ -1,11 +1,8 @@
 from abc import ABC, abstractmethod
 
-from Lab2.q1 import add
-
-
 class Displayable(ABC):
     @abstractmethod
-    def display():
+    def display(self):
         pass
 
 
@@ -26,8 +23,8 @@ class House(Displayable):
     def price(self) -> float:
         return self.__price
     @price.setter
-    def price(self, price: float) -> None:
-        self.__price = price
+    def price(self, new_price: float) -> None:
+        self.__price = new_price
     def __str__(self) -> str:
         return f"Address = {self.__address}, Square Feet = {self.__square_feet}, Number of Rooms = {self.__num_rooms}, Price = {self.__price}"
 
@@ -37,6 +34,7 @@ class House(Displayable):
     def __eq__(self, value: object) -> bool:
         if isinstance(value, House):
             return self.__address == value.__address
+        return False
 
 
 class Contact(Displayable):
@@ -71,7 +69,7 @@ class Owner(Contact):
         output = super().__str__()
         output += "\nOwns the following houses: "
         for house in self.__houses:
-            output+= "\n" + house
+            output+= f"\n{house}"
 
         return output
 
@@ -85,7 +83,7 @@ class Buyer(Contact):
         return self.__watch_list
 
     # Return the index of the house in the watch list, or -1 if not found
-    def search_house(self, house: House) -> bool:
+    def search_house(self, house: House) -> int:
         for i in range(len(self.__watch_list)):
             if self.__watch_list[i] == house:
                 return i
@@ -116,10 +114,10 @@ class Buyer(Contact):
 class Company(Displayable):
     def __init__(self, companyName):
         self.__companyName = companyName
-        self.__owners = []
-        self.__buyers = []
-        self.__agents = []
-        self.__houses = []
+        self.__owners: list[Owner] = []
+        self.__buyers: list[Buyer] = []
+        self.__agents: list[Agent] = []
+        self.__houses: list[House] = []
 
     def add_owner(self, owner: Owner):
         if owner not in self.__owners:
@@ -129,7 +127,7 @@ class Company(Displayable):
         if buyer not in self.__buyers:
             self.__buyers.append(buyer)
 
-    def add_agent(self, agent: Agent):
+    def add_agent(self, agent):
         if agent not in self.__agents:
             self.__agents.append(agent)
 
@@ -139,7 +137,7 @@ class Company(Displayable):
 
     def get_house_by_address(self, address: str) -> House|None:
         for house in self.__houses:
-            if house.__address == address:
+            if house.address == address:
                 return house
         return None
 
@@ -147,7 +145,7 @@ class Company(Displayable):
         for i in range(len(self.__houses)):
             if self.__houses[i] == house:
                 self.__houses[i], self.__houses[-1] = self.__houses[-1], self.__houses[i]
-                self.__houses[i].pop()
+                self.__houses.pop()
                 break
 
 
@@ -164,24 +162,33 @@ class Company(Displayable):
                 buyers.append(buyer)
         return buyers
 
-    def __str__(self)-> str:
+    def __str__(self):
         output = f"Company Name = {self.__companyName}\n"
+
         output += "=========================== The list of agents: =============================="
         for agent in self.__agents:
-            output+= f"\n{agent}"
+            output += f"\n{agent}"
+
+        output += "\n=========================== The house listing: ==============================="
         for house in self.__houses:
-            output+= f"\n{house}"
+            output += f"\n{house}"
+
+        output += "\n=========================== The list of owners: =============================="
         for owner in self.__owners:
-            output+= f"\n{owner}"
+            output += f"\n{owner}"
+
+        output += "\n=========================== The list of buyers: =============================="
         for buyer in self.__buyers:
-            output+= f"\n{buyer}"
+            output += f"\n{buyer}"
+
+        return output
     def display(self):
         print(self)
 
 
 class Agent(Contact):
     def __init__(self, firstname: str, lastname: str, phone_number: str, email: str, position: str, company: Company):
-        super().__init__(lastname, firstname, phone_number, email)
+        super().__init__(firstname, lastname, phone_number, email)
         self.__position = position
         self.__company = company
 
@@ -190,23 +197,30 @@ class Agent(Contact):
         self.__company.add_house_to_listing(house)
 
     def help_buyer_to_save_to_watchlist(self, buyer: Buyer, house: House):
-        pass
+        self.__company.add_buyer(buyer)
+        buyer.save_to_watchlist(house)
 
     def edit_house_price(self, address: str, new_price: float):
         house = self.__company.get_house_by_address(address)
         if house:
-            house.price(new_price)
+            house.price = new_price
 
     def sold_house(self, house):
-        pass
-
+        self.__company.remove_house_from_listing(house)
+        self.__company.remove_house_from_watchlist(house)
     # print all potential buyers who are interested in buying that house
     def display_potental_buyers(self, house):
-        pass
+        buyers = self.__company.get_buyers_by_house(house)
 
+        for buyer in buyers:
+            buyer.display()
+
+    def __str__(self) -> str:
+        output = super().__str__()
+        output += f"\nPosition = {self.__position}"
+        return output
     def display(self):
-        pass
-
+        print(self)
 
 def main():
     owner1 = Owner('Peter', 'Li', '510-111-2222', 'peter@yahoo.com')
