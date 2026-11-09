@@ -1,10 +1,13 @@
 import csv
+import os
 from tkinter import N
 from customer import Customer
 
 class CustomerRepository:
     def __init__(self) -> None:
         self.__filename = "HW3/customers.csv"
+        if not os.path.exists(self.__filename): #Create an empty file on the first run
+            open(self.__filename, "w").close()
 
     def read_customers(self) -> list[Customer]:
         customers = []
@@ -38,7 +41,7 @@ class CustomerRepository:
         '''
         customers = self.read_customers()
         for index, row_customer in enumerate(customers):
-            if row_customer == old_license:
+            if row_customer.driver_license_number == old_license:
                 customers[index] = customer
                 break
         self.save_customers(customers)
@@ -64,6 +67,15 @@ class CustomerRepository:
         customers = self.read_customers()
         customers.remove(customer)
         self.save_customers(customers)
+
+    def find_by_license(self, license: str) -> Customer:
+        '''
+        Return the customer with this driver license number, or None if there is no one
+        '''
+        for customer in self.read_customers():
+            if customer.driver_license_number == license:
+                return customer
+        return None
 
 if __name__=="__main__":
     pass
