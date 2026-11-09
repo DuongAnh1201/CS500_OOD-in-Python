@@ -51,15 +51,14 @@ class Customer(Person):
         return False
         
     def to_list(self) -> list[str]: #Used to write to the customer.txt file
-        return [self.__firstname, self.__lastname, self.__phonenumber, self.__driver_license_number]
+        return [self.firstname, self.lastname, self.phonenumber, self.__driver_license_number]
         
     @staticmethod
     def to_customer(row: list[str]) -> 'Customer': #Used to read from the customer.txt file
-        account_number = row[0]
-        firstname = row[1]
-        lastname = row[2]
-        phonenumber = row[3]
-        driver_license_number = row[4]
+        firstname = row[0]
+        lastname = row[1]
+        phonenumber = row[2]
+        driver_license_number = row[3]
         return Customer(firstname, lastname, phonenumber, driver_license_number)
 
     @staticmethod
