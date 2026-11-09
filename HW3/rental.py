@@ -1,11 +1,11 @@
 from customer import Customer
 from vehicle import Vehicle
 from datetime import date
+from typing import Optional
 class Rental:
     RENTAL_ID = 1000
-    def __init__(self, customer: Customer, vehicle: Vehicle, start_date: date, expected_return_date: date, actual_return_date: date, total_cost: float) -> None:
-        self.__rental_id = self.RENTAL_ID
-        self.RENTAL_ID += 1
+    def __init__(self, rental_id: int, customer: Customer, vehicle: Vehicle, start_date: date, expected_return_date: date, actual_return_date: date, total_cost: float) -> None:
+        self.__rental_id = rental_id
         self.__customer = customer
         self.__vehicle = vehicle
         self.__start_date = start_date
@@ -44,6 +44,9 @@ class Rental:
     @property
     def actual_return_date(self) -> date:
         return self.__actual_return_date
+    @actual_return_date.setter
+    def actual_return_date(self, return_date: date) -> None:
+        self.__actual_return_date = return_date
     
     @property
     def total_cost(self) -> float:
@@ -53,11 +56,13 @@ class Rental:
         return self.__actual_return_date is None
 
     def to_list(self) -> list[Optional[str]]:
-        return [str(self.__rental_id), self.__customer.to_list(), self.__vehicle.to_list(), self.__start_date.strftime("%Y-%m-%d"), self.__expected_return_date.strftime("%Y-%m-%d"), self.__actual_return_date.strftime("%Y-%m-%d"), str(self.__total_cost)]
+        actual_return = self.__actual_return_date.strftime("%Y-%m-%d") if self.__actual_return_date else ""
+        return [str(self.__rental_id), self.__customer.driver_license_number, self.__vehicle.license_plate_number, self.__start_date.strftime("%Y-%m-%d"), self.__expected_return_date.strftime("%Y-%m-%d"), actual_return, str(self.__total_cost)]
 
     @staticmethod
-    def to_rental(row: list[Optional[str]]) -> 'Rental':
-        return Rental(Customer.to_customer(row[1]), Vehicle.to_vehicle(row[2]), date.strptime(row[3], "%Y-%m-%d"), date.strptime(row[4], "%Y-%m-%d"), date.strptime(row[5], "%Y-%m-%d"), float(row[6]))
+    def to_rental(row: list[Optional[str]], customer: Customer, vehicle: Vehicle) -> 'Rental':
+        actual_return_date = date.fromisoformat(row[5]) if row[5] else None
+        return Rental(int(row[0]), customer, vehicle, date.fromisoformat(row[3]), date.fromisoformat(row[4]), actual_return_date, float(row[6]))
         
     @staticmethod
     def rental_information() -> 'Rental':
