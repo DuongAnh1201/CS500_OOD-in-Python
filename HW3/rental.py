@@ -1,11 +1,10 @@
 from customer import Customer
 from vehicle import Vehicle
 from datetime import date
+from typing import Optional
 class Rental:
-    RENTAL_ID = 1000
-    def __init__(self, customer: Customer, vehicle: Vehicle, start_date: date, expected_return_date: date, actual_return_date: date, total_cost: float) -> None:
-        self.__rental_id = self.RENTAL_ID
-        self.RENTAL_ID += 1
+    def __init__(self, rental_id: int, customer: Customer, vehicle: Vehicle, start_date: date, expected_return_date: date, actual_return_date: date, total_cost: float) -> None:
+        self.__rental_id = rental_id
         self.__customer = customer
         self.__vehicle = vehicle
         self.__start_date = start_date
@@ -51,6 +50,9 @@ class Rental:
     @property
     def total_cost(self) -> float:
         return self.__total_cost
+    @total_cost.setter
+    def total_cost(self, new_cost: float) -> None:
+        self.__total_cost = new_cost
 
     def is_active(self) -> bool:
         return self.__actual_return_date is None
