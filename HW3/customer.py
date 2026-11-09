@@ -7,14 +7,23 @@ class Person:
     @property
     def firstname(self) -> str:
         return self.__firstname
+    @firstname.setter
+    def firstname(self, new_firstname) -> None:
+        self.__firstname = new_firstname
 
     @property
-    def last_name(self) -> str:
+    def lastname(self) -> str:
         return self.__lastname
+    @lastname.setter
+    def lastname(self, new_lastname) -> None:
+        self.__lastname = new_lastname
 
     @property
     def phonenumber(self) -> str:
         return self.__phonenumber
+    @phonenumber.setter
+    def phonenumber(self, new_phone) -> None:
+        self.__phonenumber = new_phone
 
     def __str__(self) -> str:
         return f"First Name: {self.__firstname}, Last Name: {self.__lastname}, Phone Number: {self.__phonenumber}"
@@ -28,13 +37,17 @@ class Customer(Person):
     @property
     def driver_license_number(self) -> str:
         return self.__driver_license_number
+    @driver_license_number.setter
+    def driver_license_number(self, new_license) -> None:
+        self.__driver_license_number = new_license
+        
 
     def __str__(self) -> str:
         return super().__str__() + f", Driver License Number: {self.__driver_license_number}"
     
     def __eq__(self, other) -> bool:
         if isinstance(other, Customer):
-            return super().__eq__(other) and self.__driver_license_number == other.__driver_license_number
+            return self.__driver_license_number == other.__driver_license_number
         return False
         
     def to_list(self) -> list[str]: #Used to write to the customer.txt file
