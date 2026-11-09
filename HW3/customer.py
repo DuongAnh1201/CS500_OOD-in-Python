@@ -1,0 +1,61 @@
+class Person:
+    def __init__(self, firstname: str, lastname: str, phonenumber: str) -> None:
+        self.__firstname = firstname
+        self.__lastname = lastname
+        self.__phonenumber = phonenumber
+
+    @property
+    def firstname(self) -> str:
+        return self.__firstname
+
+    @property
+    def last_name(self) -> str:
+        return self.__lastname
+
+    @property
+    def phonenumber(self) -> str:
+        return self.__phonenumber
+
+    def __str__(self) -> str:
+        return f"First Name: {self.__firstname}, Last Name: {self.__lastname}, Phone Number: {self.__phonenumber}"
+    
+
+class Customer(Person):
+    def __init__(self, firstname: str, lastname: str, phonenumber: str, driver_license_number: str) -> None:
+        super().__init__(firstname, lastname, phonenumber)
+        self.__driver_license_number = driver_license_number
+
+    @property
+    def driver_license_number(self) -> str:
+        return self.__driver_license_number
+
+    def __str__(self) -> str:
+        return super().__str__() + f", Driver License Number: {self.__driver_license_number}"
+    
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Customer):
+            return super().__eq__(other) and self.__driver_license_number == other.__driver_license_number
+        return False
+        
+    def to_list(self) -> list[str]: #Used to write to the customer.txt file
+        return [self.__firstname, self.__lastname, self.__phonenumber, self.__driver_license_number]
+        
+    @staticmethod
+    def to_customer(row: list[str]) -> 'Customer': #Used to read from the customer.txt file
+        account_number = row[0]
+        firstname = row[1]
+        lastname = row[2]
+        phonenumber = row[3]
+        driver_license_number = row[4]
+        return Customer(firstname, lastname, phonenumber, driver_license_number)
+
+    @staticmethod
+    def customer_information() -> 'Customer':
+        firstname: str = input("Enter your first name: ")
+        lastname: str = input("Enter your last name: ")
+        phonenumber: str = input("Enter your phone number: ")
+        driver_license_number: str = input("Enter your driver license number: ")
+        return Customer(firstname, lastname, phonenumber, driver_license_number)
+        
+        
+        
