@@ -6,6 +6,7 @@ from customer_repository import CustomerRepository
 from vehicle_repository import VehicleRepository
 
 class RentalRepository:
+
     def __init__(self, customer_repo: CustomerRepository, vehicle_repo: VehicleRepository) -> None:
         self.__filename = "HW3/rentals.csv"
         self.__customer_repo = customer_repo #Used to turn a license back into a Customer
@@ -77,8 +78,7 @@ class RentalRepository:
             reader = csv.reader(file, delimiter = ";")
             ids = [int(row[0]) for row in reader]
         if not ids:
-            return Rental.RENTAL_ID #The first rental id is 1000
-        return max(ids) + 1
+            raise ValueError
 
 if __name__=="__main__":
     pass
