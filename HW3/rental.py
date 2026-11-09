@@ -1,11 +1,11 @@
 from customer import Customer
 from vehicle import Vehicle
 from datetime import date
-from typing import Optional
 class Rental:
     RENTAL_ID = 1000
-    def __init__(self, rental_id: int, customer: Customer, vehicle: Vehicle, start_date: date, expected_return_date: date, actual_return_date: date, total_cost: float) -> None:
-        self.__rental_id = rental_id
+    def __init__(self, customer: Customer, vehicle: Vehicle, start_date: date, expected_return_date: date, actual_return_date: date, total_cost: float) -> None:
+        self.__rental_id = self.RENTAL_ID
+        self.RENTAL_ID += 1
         self.__customer = customer
         self.__vehicle = vehicle
         self.__start_date = start_date

@@ -10,13 +10,37 @@ class Vehicle:
     @property
     def license_plate_number(self) -> str:
         return self.__license_plate_number
+    @license_plate_number.setter
+    def license_plate_number(self, new_plate: str) -> None:
+        self.__license_plate_number = new_plate
+
+    @property
+    def make(self) -> str:
+        return self.__make
+    @make.setter
+    def make(self, new_make: str) -> None:
+        self.__make = new_make
+
+    @property
+    def model(self) -> str:
+        return self.__model
+    @model.setter
+    def model(self, new_model: str) -> None:
+        self.__model = new_model
+
+    @property
+    def year(self) -> int:
+        return self.__year
+    @year.setter
+    def year(self, new_year: int) -> None:
+        self.__year = new_year
     
     def to_list(self) -> list[str]:
         return [self.__license_plate_number, self.__make, self.__model, str(self.__year), str(self.__daily_rate), str(self.__available)]
 
     @staticmethod
     def to_vehicle(row: list[str]) -> 'Vehicle':
-        return Vehicle(row[0], row[1], row[2], int(row[3]), float(row[4]), bool(row[5]))
+        return Vehicle(row[0], row[1], row[2], int(row[3]), float(row[4]), row[5] == "True")
     
     @staticmethod
     def vehicle_information() -> 'Vehicle':
@@ -33,6 +57,9 @@ class Vehicle:
     @property
     def daily_rate(self) -> float:
         return self.__daily_rate
+    @daily_rate.setter
+    def daily_rate(self, new_rate: float) -> None:
+        self.__daily_rate = new_rate
     
     @property
     def available(self) -> bool:
