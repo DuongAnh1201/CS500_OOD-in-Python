@@ -69,16 +69,5 @@ class RentalRepository:
         rentals.remove(rental)
         self.save_rentals(rentals)
 
-    def next_id(self) -> int:
-        '''
-        The id for a new rental: one more than the biggest id saved so far.
-        The ids are read straight from the file, so the rows skipped by read_rentals still count
-        '''
-        with open(self.__filename, "r", newline="") as file:
-            reader = csv.reader(file, delimiter = ";")
-            ids = [int(row[0]) for row in reader]
-        if not ids:
-            raise ValueError
-
 if __name__=="__main__":
     pass
