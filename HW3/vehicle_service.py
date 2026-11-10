@@ -6,9 +6,6 @@ class VehicleService:
         self.__repository = repository
 
     def add_vehicle(self, vehicle: Vehicle) -> Vehicle:
-        '''
-        Make sure the plate is not used yet, then save it
-        '''
         if self.__repository.find_by_plate(vehicle.license_plate_number) is not None:
             raise ValueError(f"A vehicle with plate {vehicle.license_plate_number} already exists.")
         vehicle.available = True #A new vehicle is always ready to rent
@@ -18,10 +15,6 @@ class VehicleService:
     UPDATE_OPTIONS = ["Change license plate", "Change make", "Change model", "Change year", "Change daily rate"] #Option 1 to 5, 0 is Done
 
     def update_vehicle(self, plate: str) -> Vehicle:
-        '''
-        Keep showing the update menu until the user chooses 0. Done
-        Availability is not here, it only changes when a vehicle is rented or returned
-        '''
         vehicle = self.find_by_plate(plate)
         while True:
             print(f"\nUpdating: {vehicle}")
