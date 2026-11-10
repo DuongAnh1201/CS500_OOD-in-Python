@@ -2,8 +2,8 @@ from customer import Customer
 from customer_repository import CustomerRepository
 
 class CustomerService:
-    def __init__(self, repository: CustomerRepository) -> None:
-        self.__repository = repository
+    def __init__(self) -> None:
+        self.__repository = CustomerRepository() #The presentation layer never touches the data layer
 
     def add_customer(self, firstname: str, lastname: str, phonenumber: str, driver_license_number: str) -> Customer:
         '''
