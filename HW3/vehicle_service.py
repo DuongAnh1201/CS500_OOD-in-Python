@@ -66,11 +66,18 @@ class VehicleService:
         Upper/lower case does not matter. Leave model empty to get every model of that make
         '''
         make, model = make.strip().lower(), model.strip().lower()
-        return [vehicle for vehicle in self.__repository.read_vehicles()
-                if vehicle.make.lower() == make and (model == "" or vehicle.model.lower() == model)]
+        vehicles = []
+        for vehicle in self.__repository.read_vehicles():
+            if vehicle.make.lower() == make and (model == "" or vehicle.model.lower() == model):
+                vehicles.append(vehicle)
+        return vehicles
 
     def list_available(self) -> list[Vehicle]:
-        return [vehicle for vehicle in self.__repository.read_vehicles() if vehicle.available]
+        vehicles = []
+        for vehicle in self.__repository.read_vehicles():
+            if vehicle.available:
+                vehicles.append(vehicle)
+        return vehicles
 
 if __name__=="__main__":
     pass
