@@ -1,12 +1,14 @@
 from datetime import date
 from rental import Rental
 from rental_repository import RentalRepository
+from customer_repository import CustomerRepository
+from vehicle_repository import VehicleRepository
 from customer_service import CustomerService
 from vehicle_service import VehicleService
 
 class RentalService:
-    def __init__(self, repository: RentalRepository, vehicle_service: VehicleService, customer_service: CustomerService) -> None:
-        self.__repository = repository
+    def __init__(self, vehicle_service: VehicleService, customer_service: CustomerService) -> None:
+        self.__repository = RentalRepository(CustomerRepository(), VehicleRepository()) #The presentation layer never touches the data layer
         self.__vehicle_service = vehicle_service
         self.__customer_service = customer_service
 

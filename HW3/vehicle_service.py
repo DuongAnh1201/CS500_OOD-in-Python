@@ -2,15 +2,19 @@ from vehicle import Vehicle
 from vehicle_repository import VehicleRepository
 
 class VehicleService:
-    def __init__(self, repository: VehicleRepository) -> None:
-        self.__repository = repository
+    def __init__(self) -> None:
+        self.__repository = VehicleRepository() #The presentation layer never touches the data layer
 
-    def add_vehicle(self, vehicle: Vehicle) -> Vehicle:
-        if self.__repository.find_by_plate(vehicle.license_plate_number) is not None:
-            raise ValueError(f"A vehicle with plate {vehicle.license_plate_number} already exists.")
-        vehicle.available = True #A new vehicle is always ready to rent
-        self.__repository.add_vehicle(vehicle)
-        return vehicle
+    def add_vehicle(self, license_plate_number: str, make: str, model: str, year: int, daily_rate: float) -> Vehicle:
+        '''
+        Make sure the plate is not used yet, then create and save the vehicle
+        '''
+        license_plate_number, make, model = license_plate_number.strip(), make.strip(), model.strip()
+        if self.__repository.find_by_plate(license_plate_number) is not None:
+            raise ValueError(f"A vehicle with plate {license_plate_number} already exists.")
+        new_vehicle = Vehicle(license_plate_number, make, model, year, daily_rate, True) #A new vehicle is always ready to rent
+        self.__repository.add_vehicle(new_vehicle)
+        return new_vehicle
 
     UPDATE_OPTIONS = ["Change license plate", "Change make", "Change model", "Change year", "Change daily rate"] #Option 1 to 5, 0 is Done
 
