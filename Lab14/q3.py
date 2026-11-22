@@ -18,7 +18,7 @@ class Command(ABC):
         pass
 
 class CreateTableCommand(Command):
-    def __init__(self, obj: Database, ) -> None:
+    def __init__(self, obj: Database) -> None:
         self.__obj = obj
 
     def execute(self):
@@ -27,6 +27,16 @@ class CreateTableCommand(Command):
         print("Created table 'users'")
 
 class InserTableCommand(Command):
+    def __init__(self, obj: Database) -> None:
+        self.__obj = obj
+
+    def execute(self):
+        sql = """INSERT INTO users (id, name, age)
+        VALUES (1, 'Duong Anh Nguyen', 20),
+        (2, 'Peter', 50);"""
+        self.__obj.dp_query(sql)
+        print("Inserting into table 'users'")
+class ReadTableCommand(Command): 
     pass
 
 class UpdateTableCommand(Command):
@@ -54,7 +64,7 @@ def main():
     db: Database = Database("Testdb.db")
     invoker: DatabaseInvoker = DatabaseInvoker()
     invoker.set_command(CreateTableCommand(db))
-
+    invoker.set_command(InserTableCommand(db))
     invoker.run_all()
 
 if __name__ == "__main__":
