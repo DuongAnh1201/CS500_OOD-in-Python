@@ -3,17 +3,17 @@ from abc import abstractmethod, ABC
 
 class Light:
     def on(self):
-        pass
+        print("Light is turning on")
 
     def off(self):
-        pass
+        print("Light is turning off")
 
 class Fan:
     def start(self):
-        pass
+        print("Fan is starting")
 
     def stop(self):
-        pass
+        print("Fan is stopping")
 
 
 class Command(ABC):
@@ -21,7 +21,7 @@ class Command(ABC):
     def execute(self):
         pass
 
-class LightOncommand(Command):
+class LightOnCommand(Command):
     def __init__(self, obj: Light) -> None:
         self.__obj = obj
 
@@ -29,7 +29,7 @@ class LightOncommand(Command):
     def execute(self) -> None:
         self.__obj.on()
 
-class LightOffcommand(Command):
+class LightOffCommand(Command):
     def __init__(self, obj: Light) -> None:
         self.__obj = obj
 
@@ -37,6 +37,17 @@ class LightOffcommand(Command):
         self.__obj.off()
 
 #Create the other two command classes
+class FanStartCommand(Command):
+    def __init__(self, obj: Fan) -> None:
+        self.__obj = obj
+    def execute(self):
+        self.__obj.start()
+
+class FanStopCommand(Command):
+    def __init__(self, obj: Fan) -> None:
+        self.__obj = obj
+    def execute(self):
+        self.__obj.stop()
 
 
 #Invoker
