@@ -36,8 +36,17 @@ class InserTableCommand(Command):
         (2, 'Peter', 50);"""
         self.__obj.dp_query(sql)
         print("Inserting into table 'users'")
+
 class ReadTableCommand(Command): 
-    pass
+    def __init__(self, obj: Database) -> None:
+        self.__obj = obj
+
+    def execute(self):
+        sql = """
+        SELECT * from users;
+        """
+        self.__obj.dp_query(sql)
+        print("Reading the whole table")
 
 class UpdateTableCommand(Command):
     pass
@@ -65,6 +74,7 @@ def main():
     invoker: DatabaseInvoker = DatabaseInvoker()
     invoker.set_command(CreateTableCommand(db))
     invoker.set_command(InserTableCommand(db))
+    invoker.set_command(ReadTableCommand(db))
     invoker.run_all()
 
 if __name__ == "__main__":
