@@ -21,7 +21,7 @@ class CreateTableCommand(Command):
     def __init__(self, obj: Database) -> None:
         self.__obj = obj
 
-    def execute(self):
+    def execute(self) -> None:
         sql = "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)"
         self.__obj.dp_query(sql)
         print("Created table 'users'")
@@ -30,7 +30,7 @@ class InserTableCommand(Command):
     def __init__(self, obj: Database) -> None:
         self.__obj = obj
 
-    def execute(self):
+    def execute(self) -> None:
         sql = """INSERT INTO users (id, name, age)
         VALUES (1, 'Duong Anh Nguyen', 20),
         (2, 'Peter', 50);"""
@@ -41,7 +41,7 @@ class ReadTableCommand(Command):
     def __init__(self, obj: Database) -> None:
         self.__obj = obj
 
-    def execute(self):
+    def execute(self) -> None:
         sql = """
         SELECT * from users;
         """
@@ -49,10 +49,31 @@ class ReadTableCommand(Command):
         print("Reading the whole table")
 
 class UpdateTableCommand(Command):
-    pass
+    def __init__(self, obj: Database) -> None:
+        self.__obj = obj
 
+    def execute(self) -> None:
+        sql = """
+        UPDATE users
+        SET age = 25
+        WHERE id = 1;
+        """
+        self.__obj.dp_query(sql)
+        print("Update table")
+        
 class RemoveTableCommand(Command):
-    pass
+    def __init__(self, obj: Database) -> None:
+        self.__obj = obj
+
+    def execute(self) -> None:
+        sql = """
+        DELETE users
+        WHERE id = 2;
+        """
+        self.__obj.dp_query(sql)
+        print("Remove record")
+
+    
 
 
 #Invoker
@@ -62,6 +83,8 @@ class DatabaseInvoker:
         
     def set_command(self, command: Command):
         self.__commands.append(command)
+
+
 
     def run_all(self):
         for command in self.__commands:
