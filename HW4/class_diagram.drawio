@@ -1,11 +1,11 @@
 <mxfile host="65bd71144e">
     <diagram id="aT6BfBtY7RwcuDj1qffv" name="Page-1">
-        <mxGraphModel dx="3508" dy="740" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="#ffffff" math="0" shadow="0">
+        <mxGraphModel dx="3169" dy="637" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="#ffffff" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="3" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;Database Layer&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#000000;" parent="1" vertex="1">
-                    <mxGeometry x="400" y="520" width="140" height="40" as="geometry"/>
+                    <mxGeometry x="560" y="390" width="140" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="4" value="Guide" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fontSize=18;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;" parent="1" vertex="1">
                     <mxGeometry x="-480" y="870" width="400" height="450" as="geometry"/>
@@ -266,7 +266,7 @@
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="120" value="GuideRegistry" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fontSize=18;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;" parent="1" vertex="1">
+                <mxCell id="120" value="GuideRegistry(BaseRepository)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;fontSize=18;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;" parent="1" vertex="1">
                     <mxGeometry x="-720" y="180" width="480" height="350" as="geometry"/>
                 </mxCell>
                 <mxCell id="121" value="- guides: list[Guide]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=18;fontColor=#000000;" parent="120" vertex="1">
@@ -320,6 +320,18 @@
                 </mxCell>
                 <mxCell id="133" value="0...*" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
                     <mxGeometry x="-390" y="835" width="40" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="136" value="CustomerRegistry(BaseRegistry)" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;" vertex="1" parent="1">
+                    <mxGeometry x="290" y="450" width="270" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="137" value="- customers: list[Customer]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="136">
+                    <mxGeometry y="26" width="270" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="138" value="" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" vertex="1" parent="136">
+                    <mxGeometry y="52" width="270" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="139" value="+ add(self, customer: Customer)&#10;+ get_by_ID(self, customer_id: str)&#10;+ get_all(self) -&gt; list&#10;+ update(self, customer: Customer) -&gt;  None&#10;+ delete(self, customer_id: str) -&gt; None&#10;+ find_by_email(self, email) -&gt; Customer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="136">
+                    <mxGeometry y="60" width="270" height="160" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
