@@ -1,0 +1,99 @@
+class Person:
+    def __init__(self,  id: str, first_name: str, last_name: str, age: int, phone: str):
+        self.__first_name = first_name
+        self.__last_name = last_name
+        self.__age = age
+        self.__phone = phone
+        self.__id = id
+
+    def to_row(self) -> tuple:
+        person = (self.__id, self.__first_name, self.__last_name, self.__age, self.__phone)
+        return person
+
+    @staticmethod
+    def from_row(person: tuple):
+        id, first_name, last_name, age, phone = person
+        return Person(id, first_name, last_name, age, phone)
+    
+    def __str__(self) -> str:
+        return f"ID: {self.__id}\nfirst_name: {self.__first_name}\nlast_name: {self.__last_name}\nage:{self.__age}\nphone:{self.__phone}"
+    
+class Guide(Person):
+    def __init__(self, id, first_name: str, last_name: str, age: int, phone: str, certified: str, technical_skills: dict[str, str], daily_avail: list[str]) -> None:
+        super().__init__()
+        self.__certified = certified
+        self.__technical_skills = {}
+        for skill, level in technical_skills.items():
+            self.__technical_skills[skill] = level
+        self.__daily_avail = []
+        for date in daily_avail:
+            self.__daily_avail.append(date)
+
+    def add_technical_skill(self, skill: str, level: str) -> None:
+        self.__technical_skills[skill] = level
+        print(f"Add a new technical skill successfully")
+
+    def add_availability(self, avail: str) -> None:
+        if avail not in self.__daily_avail:
+            self.__daily_avail.append(avail)
+            print(f"Add a new daily availability successfully")
+        else:
+            print(f"The daily availability is existed")
+
+    def remove_technical_skill(self, skill) -> None:
+        if skill in self.__technical_skills: 
+            del self.__technical_skills[skill]
+            print(f"Remove skill {skill} successfully")
+        else:
+            print(f"skill {skill} is not in the list yet")
+
+    def remove_availability(self, avail) -> None:
+        if avail in self.__daily_avail:
+            self.__daily_avail.remove(avail)
+            print(f"Remove {avail} successfully")
+        else:
+            print(f"{avail} is not in the availability list")
+
+    def get_skill_level(self, skill) -> str | None:
+        level = None
+        if skill in self.__technical_skills:
+            level = self.__technical_skills[skill]
+        return level
+
+    def is_avail(self, date: str) -> bool:
+        if date in self.__daily_avail:
+            return True
+        return False
+
+    def to_row(self) -> tuple:
+        guide = (self.__id, self.__first_name, self.__last_name, self.__age, self.__phone, self.__certified, self.__technical_skills, self.__daily_avail)
+        return guide
+
+    @staticmethod
+    def from_row(self, guide) -> Guide:
+        id, first_name, last_name, age, phone, certified, technical_skills, daily_avail = guide
+        return Guide(id, first_name, last_name, age, phone, certified, technical_skills, daily_avail)
+    
+    def __str__(self) -> str:
+        return super().__str__() + f"\ncertified: {self.__certified}\ntechnical_skills: {self.__technical_skills}\ndaily_avail: {self.__daily_avail}"
+
+class Customer(Person):
+    def __init__(self, id: str, first_name: str, last_name: str, age: int, phone: str, email: str) -> None:
+        super().__init__()
+        self.__email = email
+    
+    def to_row(self) -> tuple:
+        customer = (self.__id, self.__first_name, self.__last_name, self.__age, self.__phone, self.__email)
+        return customer
+
+    @staticmethod    
+    def from_row(customer: tuple):
+        id, first_name, last_name, age, phone, email = customer
+        return Customer(id, first_name, last_name, age, phone, email)
+
+    def __str__(self) -> str:
+        return super().__str__() + f"\nemail: {self.__email}"
+
+            
+
+        
