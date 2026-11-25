@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from enum import Enum
 class Repository(ABC):
     @abstractmethod
     def save(self):
@@ -41,3 +42,13 @@ class BaseRegistry(ABC):
     def delete(self, obj_id):
         pass
     
+class ReservationStatus(Enum):
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    CANCEL = "cancelled"
+    COMPLETED = "completed"
+
+class GearRequestStatus(Enum):
+    PENDING = "pending" 
+    APPROVED = "approved"
+    REJECTED = "rejected"
