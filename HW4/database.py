@@ -3,7 +3,7 @@ class Database:
     def __init__(self, db_file: str):
         self.__conn = sqlite3.connect(db_file)
 
-    def db_query(self, query, params = []):
+    def db_query(self, query, params):
         cursor = self.__conn.cursor()
         cursor.execute(query, params)
         self.__conn.commit()
@@ -15,7 +15,7 @@ class Database:
             columns += f", {name} {col_type}"
         columns = columns [2::] 
         sql = f"""CREATE TABLE IF NOT EXISTS {table_name} ({columns})"""
-        self.db_query(sql)
+        self.db_query(sql, params)
         print()
 
     def close(self) -> None:
