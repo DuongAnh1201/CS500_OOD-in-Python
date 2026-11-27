@@ -97,6 +97,18 @@ class Guide(Person):
         id, first_name, last_name, age, phone, certified, technical_skills, daily_avail = guide
         return Guide(id, first_name, last_name, age, phone, certified, technical_skills, daily_avail)
     
+    @staticmethod
+    def convert_list(daily_avail: list[str]) -> str:
+        return ",".join(daily_avail)
+
+    @staticmethod
+    def convert_string(daily_avail: str) -> list[str]:
+        dates = []
+        if daily_avail != "":
+            for date in daily_avail.split(","):
+                dates.append(date)
+        return dates
+    
     def __str__(self) -> str:
         return super().__str__() + f"\ncertified: {self.__certified}\ntechnical_skills: {self.__technical_skills}\ndaily_avail: {self.__daily_avail}"
 
