@@ -1,7 +1,9 @@
+from HW4.expedition import ExpeditionWindow
 from interface import Repository
 from database import Database
-from gears import Gear, InventoryFactory
+from gears import Gear, GearRequest, InventoryFactory
 from person import Customer, Guide, Person
+from reservation import Reservation
 class InventoryRepository(Repository):
     def __init__(self):
         self.__db = Database("inventory.db")
@@ -56,7 +58,7 @@ class InventoryRepository(Repository):
 
 class CustomerRepository(Repository):
     def __init__(self) -> None:
-        self.__db = Database("custome.db")
+        self.__db = Database("customer.db")
         self.__columns = {"ID": "TEXT PRIMARY KEY", "first_name": "TEXT", "last_name": "TEXT", "age": "INTEGER", "phone": "TEXT", "email": "TEXT"}
         self.__db.create_tables("customer", self.__columns)
 
@@ -190,7 +192,91 @@ class GuideRepository(Repository):
         sql_guide = """DELETE from guide
         WHERE ID = ? """
         self.__db.db_query(sql_guide, (obj_id, ))
+        print("Delete successfully!")
+class ExpeditionReservationRepository(Repository):
+    pass
 
+class ReservationRepository(Repository):
+    def __init__(self):
+        self.__db = Database("reservation.db")
+        self.__columns_reservation = {"ID": "TEXT", "customer": "TEXT", "expedition_reservation": "TEXT","gear_requests": "TEXT", "created_at": "TEXT", "status": "TEXT"}
+        self.__columns_expedition = {"ID": "TEXT", "start_date": "TEXT", "end_date": "TEXT", "activity_descreiption": "TEXT", "max_capacity": "INTEGER", "guide": "TEXT"}       
+        self.__db.create_tables("reservation", self.__columns_reservation)
+        self.__db.create_tables("expedition_window", self.__columns_expedition)
+        self.__db_customer = CustomerRepository()
+        self.__db_expedition = ExpeditionReservationRepository()
+
+    def save(self, obj: Reservation):
+        id, customer, expedition_reservation, gear_requests, created_at, status = obj.to_row()
+        customer_id = customer.id
+        expedition_reservation_id = expedition_reservation.id
+        gear_request_ids = []
+        for gear_request in gear_requests:
+            gear_request_ids.append(gear_request.id)
+        sql = """
+        INSERT INTO reservation
+        VALUES (?, ?, ?, ?, ?, ?)
+        """
+        self.__db.db_query(sql, (id, customer_id, expedition_reservation_id, gear_request_ids, created_at, status))
+        print("Saved successfully")
+
+    def find_by_id(self, obj_id):
+        sql = """
+        SELECT * from reservation
+        WHERE ID = ?
+        """
+        obj = self.__db.db_query(sql, (obj_id,))
+        if len(obj) == 0:
+            return None
+        id, customer_id, expedition_reservation_id, gear_request_ids, created_at, status = obj[0]
+        customer = self.__db_customer.find_by_id(customer_id)
+        expedition_reservation = self.__db__expedition.find_by_id(expedition_reservation_id) 
+        gear_requests = []
+        gear_request_ids = gear_request_ids.split(",")
+        for gear_request_id in gear_request_ids:
+            gear_request: GearRequest = self.__db_gear_request.find_by_id(gear_request_id)
+            gear_requests.append(gear_request)
+        return Reservation(customer, expedition_reservation, gear_requests, created_at, status, id)
+    
+    def find_all(self) -> list:
+        sql = """
+        SELECT * from reservation
+        """
+        reservations = []
+        reservation_data = self.__db.db_query(sql, params = [])
+        for reservation in reservation_data:
+            id, customer_id, expedition_reservation_id, gear_request_ids, created_at, status = reservation
+            customer = self.__db_customer.find_by_id(customer_id)
+            expedition_reservation = self.__db__expedition.find_by_id(expedition_reservation_id) 
+            gear_requests = []
+            gear_request_ids = gear_request_ids.split(",")
+            for gear_request_id in gear_request_ids:
+                gear_request: GearRequest = self.__db_gear_request.find_by_id(gear_request_id)
+                gear_requests.append(gear_request)
+            reservations.append(Reservation(customer, expedition_reservation, gear_request, created_at, status, id))
+        return reservations
+
+    def update(self, obj_id) -> None:
+        obj = self.find_by_id(obj_id)
+        if not obj:
+            return None
+        fix_data = input("Which part do you want to update (customer_id, expedition_reservation_id, gear_request_id, created_at, status)")
+        sql = f"""
+            UPDATE reservation
+            SET {fix_data} = ?
+            WHERE ID = ?        
+        """
+        self.__db.db_query(sql, (fix_data, obj_id))
+        print("Update value successfully")
+        return None
+
+    def delete(self, obj_id) -> None:
+        sql = """
+        DELETE FROM reservation
+        WHERE ID = ?
+        """
+        self.__db.db_query(sql, (obj_id, ))
+        print("Delete successfully!")
 def main():
     repo = InventoryRepository()
 
