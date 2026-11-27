@@ -111,6 +111,24 @@ class GuideRepository(Repository):
         self.__db.create_tables("guide", self.__columns_guide)
         self.__db.create_tables("guide_skills", self.__columns_guide_skills)
 
+    def save(self, obj: Guide):
+        id, first_name, last_name, age, phone, certified, technical_skills, daily_avail = obj
+        sql_guide = """ 
+        INSERT INTO guide
+        VALUES (?, ?, ?, ?, ?, ? , ?)
+        """
+        daily_avail = Guide.convert_string(daily_avail)
+        self.__db.db_query(sql_guide, (id, first_name, last_name, age, phone, certified, daily_avail))
+
+        sql_guide_skills = """
+        INSERT INTO guide_skills
+        VALUES (?, ?, ?)
+        """
+        for skill, level in technical_skills.items():
+            self.__db.db_query(sql_guide_skills, (id, skill, level))
+        print("Save successfully!")
+        
+
 
 def main():
     repo = InventoryRepository()
