@@ -52,3 +52,23 @@ class GearRequestStatus(Enum):
     PENDING = "pending" 
     APPROVED = "approved"
     REJECTED = "rejected"
+
+class Repository(ABC):
+    @abstractmethod
+    def save(self, obj):
+        pass
+
+    @abstractmethod
+    def find_by_id(self, obj_id):
+        pass
+
+    @abstractmethod
+    def find_all(self) -> list:
+        pass
+
+    def update(self, obj):
+        pass
+
+    def delete(self, obj_id):
+        pass
+
