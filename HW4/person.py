@@ -1,10 +1,13 @@
 class Person:
-    def __init__(self,  id: str, first_name: str, last_name: str, age: int, phone: str):
+    def __init__(self, first_name: str, last_name: str, age: int, phone: str, person_id: str = ""):
         self.__first_name = first_name
         self.__last_name = last_name
         self.__age = age
         self.__phone = phone
-        self.__id = id
+        self.__id = "person" + str(id(self))
+        # keep the saved ID when the object is loaded back from the database
+        if person_id != "":
+            self.__id = person_id
 
     def to_row(self) -> tuple:
         person = (self.__id, self.__first_name, self.__last_name, self.__age, self.__phone)
@@ -14,7 +17,27 @@ class Person:
     def from_row(person: tuple):
         id, first_name, last_name, age, phone = person
         return Person(id, first_name, last_name, age, phone)
-    
+
+    @property
+    def id(self):
+        return self.__id
+
+    @property
+    def first_name(self):
+        return self.__first_name
+
+    @property
+    def last_name(self):
+        return self.__last_name
+
+    @property
+    def age(self):
+        return self.__age
+
+    @property
+    def phone(self):
+        return self.__phone
+
     def __str__(self) -> str:
         return f"ID: {self.__id}\nfirst_name: {self.__first_name}\nlast_name: {self.__last_name}\nage:{self.__age}\nphone:{self.__phone}"
     
@@ -66,11 +89,11 @@ class Guide(Person):
         return False
 
     def to_row(self) -> tuple:
-        guide = (self.__id, self.__first_name, self.__last_name, self.__age, self.__phone, self.__certified, self.__technical_skills, self.__daily_avail)
+        guide = (self.id, self.__first_name, self.__last_name, self.__age, self.__phone, self.__certified, self.__technical_skills, self.__daily_avail)
         return guide
 
     @staticmethod
-    def from_row(self, guide) -> Guide:
+    def from_row(self, guide):
         id, first_name, last_name, age, phone, certified, technical_skills, daily_avail = guide
         return Guide(id, first_name, last_name, age, phone, certified, technical_skills, daily_avail)
     
@@ -78,22 +101,23 @@ class Guide(Person):
         return super().__str__() + f"\ncertified: {self.__certified}\ntechnical_skills: {self.__technical_skills}\ndaily_avail: {self.__daily_avail}"
 
 class Customer(Person):
-    def __init__(self, id: str, first_name: str, last_name: str, age: int, phone: str, email: str) -> None:
-        super().__init__()
+    def __init__(self, first_name: str, last_name: str, age: int, phone: str, email: str, person_id: str = "") -> None:
+        super().__init__(first_name, last_name, age, phone, person_id)
         self.__email = email
-    
+
     def to_row(self) -> tuple:
-        customer = (self.__id, self.__first_name, self.__last_name, self.__age, self.__phone, self.__email)
+        customer = (self.id, self.first_name, self.last_name, self.age, self.phone, self.__email)
         return customer
 
-    @staticmethod    
+    @staticmethod
     def from_row(customer: tuple):
         id, first_name, last_name, age, phone, email = customer
-        return Customer(id, first_name, last_name, age, phone, email)
+        return Customer(first_name, last_name, age, phone, email, id)
 
     def __str__(self) -> str:
         return super().__str__() + f"\nemail: {self.__email}"
 
-            
+
+
 
         
