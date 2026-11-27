@@ -196,6 +196,8 @@ class GuideRepository(Repository):
 class ExpeditionReservationRepository(Repository):
     pass
 
+class GearRequestRepository(Repository):
+    pass
 class ReservationRepository(Repository):
     def __init__(self):
         self.__db = Database("reservation.db")
@@ -205,6 +207,7 @@ class ReservationRepository(Repository):
         self.__db.create_tables("expedition_window", self.__columns_expedition)
         self.__db_customer = CustomerRepository()
         self.__db_expedition = ExpeditionReservationRepository()
+        self.__db_gear_request = GearRequestRepository()
 
     def save(self, obj: Reservation):
         id, customer, expedition_reservation, gear_requests, created_at, status = obj.to_row()
