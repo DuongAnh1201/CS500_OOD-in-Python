@@ -112,12 +112,12 @@ class GuideRepository(Repository):
         self.__db.create_tables("guide_skills", self.__columns_guide_skills)
 
     def save(self, obj: Guide):
-        id, first_name, last_name, age, phone, certified, technical_skills, daily_avail = obj
+        id, first_name, last_name, age, phone, certified, technical_skills, daily_avail = obj.to_row()
         sql_guide = """ 
         INSERT INTO guide
         VALUES (?, ?, ?, ?, ?, ? , ?)
         """
-        daily_avail = Guide.convert_string(daily_avail)
+        daily_avail = Guide.convert_list(daily_avail)
         self.__db.db_query(sql_guide, (id, first_name, last_name, age, phone, certified, daily_avail))
 
         sql_guide_skills = """
@@ -127,8 +127,69 @@ class GuideRepository(Repository):
         for skill, level in technical_skills.items():
             self.__db.db_query(sql_guide_skills, (id, skill, level))
         print("Save successfully!")
-        
 
+    def find_by_id(self, obj_id):
+        sql_guide = """ SELECT * FROM guide WHERE ID = ?
+        """
+        obj = self.__db.db_query(sql_guide, (obj_id, ))
+        sql_guide_skill = """SELECT * FROM guide_skills WHERE guide_id = ?"""
+        guide_id = self.__db.db_query(sql_guide_skill, (obj_id, ))
+        if len(obj) == 0:
+            return None
+        id, first_name, last_name, age, phone, certified, daily_avail = obj[0]
+        # rebuild the skills dict from the guide_skills rows
+        technical_skills = {}
+        for skill_row in guide_id:
+            skill_guide_id, skill, level = skill_row
+            technical_skills[skill] = level
+        row = (id, first_name, last_name, age, phone, certified, technical_skills, Guide.convert_string(daily_avail))
+        customer = Guide.from_row(row)
+        return customer
+
+    def find_all(self) -> None:
+        sql = """SELECT ID FROM guide"""
+        guide_ids = self.__db.db_query(sql, params=[])
+        for guide_id in guide_ids:
+            guide = self.find_by_id(guide_id[0])
+            print(guide)
+            print()
+
+    def update(self, obj_id) -> None:
+        sql = """ """
+        obj = self.find_by_id(obj_id)
+        if not obj:
+            return None
+        fix_data = input("Which part do you want to update (first_name, last_name, age, phone, certified, daily_avail, technical_skills)")
+        # skills live in their own table: add a new skill or change its level
+        if fix_data == "technical_skills":
+            skill = input("Skill = ")
+            level = input("Level = ")
+            sql = """INSERT OR REPLACE INTO guide_skills (guide_id, skill, level)
+                    VALUES (?, ?, ?)"""
+            self.__db.db_query(sql, (obj_id, skill, level))
+            print("Update value successfully")
+            return None
+        value = input("Value = ")
+        sql = f"""UPDATE guide
+                    SET {fix_data} = ?
+                    WHERE ID = ?
+                    """
+        if fix_data == "age":
+            value = int(value)
+        if fix_data == "certified":
+            value = value == "True"
+        # daily_avail is typed as dates separated by commas, e.g. 2026-12-01,2026-12-02
+        self.__db.db_query(sql, (value, obj_id))
+        print("Update value successfully")
+
+    def delete(self, obj_id) -> None:
+        # delete the skills first, then the guide
+        sql_guide_skills = """DELETE from guide_skills
+        WHERE guide_id = ? """
+        self.__db.db_query(sql_guide_skills, (obj_id, ))
+        sql_guide = """DELETE from guide
+        WHERE ID = ? """
+        self.__db.db_query(sql_guide, (obj_id, ))
 
 def main():
     repo = InventoryRepository()
@@ -173,6 +234,28 @@ def main():
     # delete a customer
     customer_repo.delete(ben.id)
     customer_repo.find_all()
+
+    guide_repo = GuideRepository()
+
+    # save dummy guides ("" lets Person generate the ID)
+    minh = Guide("", "Minh", "Pham", 30, "408-555-6666", True, {"ice climbing": "advanced", "rope rescue": "intermediate"}, ["2026-12-01", "2026-12-02"])
+    lan = Guide("", "Lan", "Vo", 27, "408-777-8888", False, {"navigation": "beginner"}, ["2026-12-05"])
+    guide_repo.save(minh)
+    guide_repo.save(lan)
+
+    # show all guides
+    guide_repo.find_all()
+
+    # find one guide by ID
+    guide = guide_repo.find_by_id(minh.id)
+    print(guide)
+
+    # update a guide (asks for the field and value)
+    guide_repo.update(minh.id)
+
+    # delete a guide
+    guide_repo.delete(lan.id)
+    guide_repo.find_all()
 
 if __name__ == "__main__":
     main()
