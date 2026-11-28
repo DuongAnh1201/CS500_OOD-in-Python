@@ -48,6 +48,7 @@ class ReservationStatus(Enum):
     CONFIRMED = "confirmed"
     CANCEL = "cancelled"
     COMPLETED = "completed"
+    WAITLISTED = "wailisted"
 
 class GearRequestStatus(Enum):
     PENDING = "pending" 
@@ -71,6 +72,31 @@ class Repository(ABC):
         pass
 
     def delete(self, obj_id):
+        pass
+
+class BaseRegistry(ABC):
+    @abstractmethod
+    def __init__(self, repository: Repository):
+        pass
+
+    @abstractmethod
+    def add(self, obj):
+        pass
+
+    @abstractmethod
+    def get_by_id(self, obj_id):
+        pass
+
+    @abstractmethod
+    def get_all(self) -> list:
+        pass
+
+    @abstractmethod
+    def update(self, obj):
+        pass
+
+    @abstractmethod
+    def delete(self, obj):
         pass
 
 
