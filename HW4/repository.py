@@ -260,7 +260,72 @@ class ExpeditionReservationRepository(Repository):
         
 
 class GearRequestRepository(Repository):
-    pass
+    def __init__(self):
+        self.__db = Database("gear_request.db")
+        self.__columns = {"ID": "TEXT", "gear_type": "TEXT", "quantity": "INTEGER", "notes": "TEXT", "status":"TEXT"}
+
+        self.__db.create_tables("gear_request", self.__columns)
+
+    def save(self, obj: GearRequest):
+        sql = """
+        INSERT INTO gear_request (ID, gear_type, quantity, notes, status)
+        VALUES (?, ?, ?, ?, ?)
+        """
+
+        id, gear_type, quantity, notes, status = obj.to_row()
+        self.__db.db_query(sql, (id, gear_type, quantity, notes, status))
+        print("Save successfully!")
+
+    def find_by_id(self, obj_id) -> GearRequest|None:
+        sql = """
+        SELECT * from gear_request
+        WHERE ID = ?
+        """
+        obj = self.__db.db_query(sql, (obj_id, ))
+        if len(obj) == 0:
+            return None
+        id, gear_type, quantity, notes, status = obj[0]
+        return GearRequest(gear_type, quantity, notes, status, id)
+
+    def find_all(self) -> list:
+        sql = """
+        SELECT * from gear_request
+        """
+        gear_request_data = self.__db.db_query(sql, params = [])
+        gear_requests = []
+        for gear_request in gear_request_data:
+            id, gear_type, quantity, notes, status = gear_request
+            
+            gear_requests.append(GearRequest(gear_type, quantity, notes, status, id))
+
+        return gear_requests
+
+    def update(self, obj_id):
+        fix_data = input("Which part do you want to update (gear_type, quantity, notes, status)")
+        sql = f"""
+        UPDATE gear_request
+        SET {fix_data} = ?
+        WHERE ID = ?
+        """
+        value = input("Value = ")
+        if fix_data == "quantity":
+            value = int(value)
+            self.__db.db_query(sql, (value, obj_id))
+            print("Update successfully")
+            return None
+        self.__db.db_query(sql, (value, obj_id))
+        print("Update successfully!")
+        return None
+
+    def delete(self, obj_id)-> None:
+        sql = f"""
+        DELETE from gear_request
+        WHERE ID = ?
+        """
+        self.__db.db_query(sql, (obj_id, ))
+        print("Delete successfully!")
+        return None
+            
 class ReservationRepository(Repository):
     def __init__(self):
         self.__db = Database("reservation.db")
