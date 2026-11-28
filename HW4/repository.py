@@ -193,8 +193,71 @@ class GuideRepository(Repository):
         WHERE ID = ? """
         self.__db.db_query(sql_guide, (obj_id, ))
         print("Delete successfully!")
+
 class ExpeditionReservationRepository(Repository):
-    pass
+    def __init__(self) -> None:
+        self.__db = Database("expedition.db")
+        self.__db_guide = GuideRepository() 
+        self.__columns = {"ID": "TEXT PRIMARY KEY", "season_name": "TEXT", "start_date": "TEXT", "end_date": "TEXT", "activity_description": "TEXT", "max_capacity": "INTEGER", "guide": "TEXT"}
+        self.__db.create_tables("expedition", self.__columns)
+
+    def save(self, obj: ExpeditionWindow) -> None:
+        id, season_name, start_date, end_date, activity_description, max_capacity, guide = obj.to_row()
+        guide_id = obj.guide.id
+        sql = """
+        INSERT INTO expedition (ID, season_name, start_date, end_date, activity_description, max_capacity, guide)
+        VALEUS (?, ?, ?, ?, ?, ?, ?)
+        """
+        self.__db.db_query(sql, (id, season_name, start_date, end_date, activity_description, max_capacity, guide))
+        print("Add new expedition reservation successfully!")
+
+    def find_by_id(self, obj_id) -> ExpeditionWindow|None:
+        sql = """
+        SELECT * FROM expedition 
+        WHERE ID = ?
+        """
+        obj = self.__db.db_query(sql, (obj_id, ))
+        if len(obj) == 0:
+            return None
+        id, season_name, start_date, end_date, activity_description, max_capacity, guide_id = obj[0]
+        guide = self.__db_guide.find_by_id(guide_id)
+        expedition_window = ExpeditionWindow(season_name, start_date, end_date, activity_description, max_capacity, guide, id)
+        return expedition_window
+
+    def find_all(self) -> list:
+        sql = """
+        SELECT * from expedition
+        """
+        expedition_windows = []
+        expedition_data = self.__db.db_query(sql, params= [])
+        for expedition in expedition_data:
+            id, season_name, start_date, end_date, activity_description, max_capacity, guide_id = expedition
+            guide = self.__db_guide.find_by_id(guide_id)
+            expedition_window = ExpeditionWindow(season_name, start_date, end_date, activity_description, max_capacity, guide, id)
+            expedition_windows.append(expedition_window)
+        return expedition_windows
+
+    def update(self, obj_id) -> None:
+        obj = self.find_by_id(obj_id)
+        if not obj:
+            return None
+        fix_data = input("Which part do you want to update (season_name, start_date, end_date, activity_description, max_capacity, guide)")
+        sql = f"""
+        UPDATE expedition
+        SET {fix_data} = ?
+        WHERE ID = ?
+        """
+        value = input("Value: ")
+        if fix_data == 'max_capacity':
+            value = int(value)
+            self.__db.db_query(sql, (value, obj_id))
+            print("Update successfully!")
+            return None
+    
+        self.__db.db_query(sql, (value, obj_id))
+        print("Update successfully")
+        return None
+        
 
 class GearRequestRepository(Repository):
     pass
@@ -202,9 +265,7 @@ class ReservationRepository(Repository):
     def __init__(self):
         self.__db = Database("reservation.db")
         self.__columns_reservation = {"ID": "TEXT", "customer": "TEXT", "expedition_reservation": "TEXT","gear_requests": "TEXT", "created_at": "TEXT", "status": "TEXT"}
-        self.__columns_expedition = {"ID": "TEXT", "start_date": "TEXT", "end_date": "TEXT", "activity_descreiption": "TEXT", "max_capacity": "INTEGER", "guide": "TEXT"}       
         self.__db.create_tables("reservation", self.__columns_reservation)
-        self.__db.create_tables("expedition_window", self.__columns_expedition)
         self.__db_customer = CustomerRepository()
         self.__db_expedition = ExpeditionReservationRepository()
         self.__db_gear_request = GearRequestRepository()
@@ -217,7 +278,7 @@ class ReservationRepository(Repository):
         for gear_request in gear_requests:
             gear_request_ids.append(gear_request.id)
         sql = """
-        INSERT INTO reservation
+        INSERT INTO reservation (ID, customer, expedition_reservation, gear_requests, created_at, status)
         VALUES (?, ?, ?, ?, ?, ?)
         """
         self.__db.db_query(sql, (id, customer_id, expedition_reservation_id, gear_request_ids, created_at, status))
@@ -259,19 +320,22 @@ class ReservationRepository(Repository):
             reservations.append(Reservation(customer, expedition_reservation, gear_request, created_at, status, id))
         return reservations
 
-    def update(self, obj_id) -> None:
-        obj = self.find_by_id(obj_id)
-        if not obj:
-            return None
-        fix_data = input("Which part do you want to update (customer_id, expedition_reservation_id, gear_request_id, created_at, status)")
-        sql = f"""
-            UPDATE reservation
-            SET {fix_data} = ?
-            WHERE ID = ?        
-        """
-        self.__db.db_query(sql, (fix_data, obj_id))
-        print("Update value successfully")
-        return None
+    # def update(self, obj_id) -> None:
+    #     obj = self.find_by_id(obj_id)
+    #     if not obj:
+    #         return None
+    #     fix_data = input("Which part do you want to update (customer_id, expedition_reservation_id, gear_request_id, created_at, status)")
+    #     sql = f"""
+    #         UPDATE reservation
+    #         SET {fix_data} = ?
+    #         WHERE ID = ?        
+    #     """
+    #     self.__db.db_query(sql, (fix_data, obj_id))
+    #     print("Update value successfully")
+    #     return None
+    """
+    Fix the update, using the object, but save the id.
+    """
 
     def delete(self, obj_id) -> None:
         sql = """
