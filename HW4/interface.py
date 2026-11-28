@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
+
 class Repository(ABC):
     @abstractmethod
     def save(self):
@@ -72,3 +73,5 @@ class Repository(ABC):
     def delete(self, obj_id):
         pass
 
+
+    
