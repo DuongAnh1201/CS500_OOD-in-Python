@@ -320,22 +320,20 @@ class ReservationRepository(Repository):
             reservations.append(Reservation(customer, expedition_reservation, gear_request, created_at, status, id))
         return reservations
 
-    # def update(self, obj_id) -> None:
-    #     obj = self.find_by_id(obj_id)
-    #     if not obj:
-    #         return None
-    #     fix_data = input("Which part do you want to update (customer_id, expedition_reservation_id, gear_request_id, created_at, status)")
-    #     sql = f"""
-    #         UPDATE reservation
-    #         SET {fix_data} = ?
-    #         WHERE ID = ?        
-    #     """
-    #     self.__db.db_query(sql, (fix_data, obj_id))
-    #     print("Update value successfully")
-    #     return None
-    """
-    Fix the update, using the object, but save the id.
-    """
+    def update(self, obj_id) -> None:
+        obj = self.find_by_id(obj_id)
+        if not obj:
+            return None
+        fix_data = input("Which part do you want to update (customer_id, expedition_reservation_id, gear_request_id, created_at, status)")
+        sql = f"""
+            UPDATE reservation
+            SET {fix_data} = ?
+            WHERE ID = ?        
+        """
+        self.__db.db_query(sql, (fix_data, obj_id))
+        print("Update value successfully")
+        return None
+
 
     def delete(self, obj_id) -> None:
         sql = """
