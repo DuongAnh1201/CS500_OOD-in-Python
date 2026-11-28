@@ -34,25 +34,13 @@ class InventoryRepository(Repository):
             row_id, gear_type, condition_ratings, maintenance_records, is_avail = gear_data
             gears.append(self.__factory.create_gear_by_tuple(gear_type, gear_data))
         return gears
-    def update(self, obj_id) -> None:
-        obj = self.find_by_id(obj_id)
-        if not obj:
-            return None
-        fix_data = input("Which part do you want to update (condition_ratings, maintenance_records, is_avail)")
-        value = input("Value = ")
+    def update(self, obj: Gear) -> None:
+        id, gear_type, condition_ratings, maintenance_records, is_avail = obj.to_row()
         sql = f"""UPDATE inventory
-                    SET {fix_data} = ?
+                    SET gear_type = ?, condition_ratings = ?, maintenance_records = ?, is_avail = ?
                     WHERE ID = ?
                     """
-        if fix_data == "condition_ratings":
-            value = float(value)
-        
-        if fix_data == "is_avail":
-            if value == "true":
-                value = True
-            elif value == "false":
-                value = False
-        self.__db.db_query(sql, (value, obj_id))
+        self.__db.db_query(sql, (gear_type, condition_ratings, maintenance_records, is_avail, id))
         print("Update value successfully")
     
     def delete(self, obj_id) -> None:
