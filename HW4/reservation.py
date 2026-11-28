@@ -35,5 +35,8 @@ class Reservation:
     def from_row(self, reservation: tuple):
         id, customer, expedition_reservation, gear_requests, created_at, status = reservation
         return Reservation(customer, expedition_reservation, gear_requests, created_at, status, id)
-    
+
+    @property
+    def id(self):
+        return self.__id    
 
