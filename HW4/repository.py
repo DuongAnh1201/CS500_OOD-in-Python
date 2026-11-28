@@ -1,3 +1,4 @@
+from pickle import TRUE
 from expedition import ExpeditionWindow
 from interface import Repository, GearRequestStatus, ReservationStatus
 from database import Database
@@ -48,6 +49,12 @@ class InventoryRepository(Repository):
                     """
         if fix_data == "condition_ratings":
             value = float(value)
+        
+        if fix_data == "status":
+            if value == "true":
+                value = TRUE
+            elif value == "false":
+                value = False
         self.__db.db_query(sql, (value,))
         print("Update value successfully")
     
@@ -294,7 +301,7 @@ class GearRequestRepository(Repository):
         if len(obj) == 0:
             return None
         id, gear_type, quantity, notes, status = obj[0]
-        return GearRequest(gear_type, quantity, notes, status, id)
+        return GearRequest(gear_type, quantity, notes, GearRequestStatus(status), id)
 
     def find_all(self) -> list:
         sql = """
@@ -305,7 +312,7 @@ class GearRequestRepository(Repository):
         for gear_request in gear_request_data:
             id, gear_type, quantity, notes, status = gear_request
             
-            gear_requests.append(GearRequest(gear_type, quantity, notes, status, id))
+            gear_requests.append(GearRequest(gear_type, quantity, notes, GearRequestStatus(status), id))
 
         return gear_requests
 
@@ -322,6 +329,9 @@ class GearRequestRepository(Repository):
             self.__db.db_query(sql, (value, obj_id))
             print("Update successfully")
             return None
+        # check the status through the enum so a typo is not saved
+        if fix_data == "status":
+            value = GearRequestStatus(value).value
         self.__db.db_query(sql, (value, obj_id))
         print("Update successfully!")
         return None
@@ -374,7 +384,7 @@ class ReservationRepository(Repository):
         for gear_request_id in gear_request_ids:
             gear_request: GearRequest = self.__db_gear_request.find_by_id(gear_request_id)
             gear_requests.append(gear_request)
-        return Reservation(customer, expedition_reservation, gear_requests, created_at, status, id)
+        return Reservation(customer, expedition_reservation, gear_requests, created_at, ReservationStatus(status), id)
     
     def find_all(self) -> list:
         sql = """
@@ -391,20 +401,25 @@ class ReservationRepository(Repository):
             for gear_request_id in gear_request_ids:
                 gear_request: GearRequest = self.__db_gear_request.find_by_id(gear_request_id)
                 gear_requests.append(gear_request)
-            reservations.append(Reservation(customer, expedition_reservation, gear_requests, created_at, status, id))
+            reservations.append(Reservation(customer, expedition_reservation, gear_requests, created_at, ReservationStatus(status), id))
         return reservations
 
     def update(self, obj_id) -> None:
         obj = self.find_by_id(obj_id)
         if not obj:
             return None
-        fix_data = input("Which part do you want to update (customer, expedition_reservation_id, gear_request_id, created_at, status)")
+        fix_data = input("Which part do you want to update (customer, expedition_reservation, gear_requests, created_at, status)")
         sql = f"""
             UPDATE reservation
             SET {fix_data} = ?
-            WHERE ID = ?        
+            WHERE ID = ?
         """
-        self.__db.db_query(sql, (fix_data, obj_id))
+        # customer and expedition_reservation take an ID, gear_requests takes IDs separated by commas
+        value = input("Value = ")
+        # check the status through the enum so a typo is not saved
+        if fix_data == "status":
+            value = ReservationStatus(value).value
+        self.__db.db_query(sql, (value, obj_id))
         print("Update value successfully")
         return None
 
