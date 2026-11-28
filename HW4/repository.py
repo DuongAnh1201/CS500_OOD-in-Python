@@ -1,4 +1,4 @@
-from expedition import ExpeditionWindow
+from expedition import ExpeditionWindow, ExpeditionFactory
 from interface import Repository, GearRequestStatus, ReservationStatus
 from database import Database
 from gears import Gear, GearRequest, InventoryFactory
@@ -10,10 +10,7 @@ class InventoryRepository(Repository):
         self.__factory = InventoryFactory()
         self.__columns = {"ID": "TEXT PRIMARY KEY", "gear_type": "TEXT","condition_ratings": "REAL", "maintenance_records": "TEXT", "is_avail": "BOOLEAN"}
         self.__db.create_tables("inventory", self.__columns)
-    def save(self, gear_type):
-        gear_id = gear_type + str(id(gear_type))
-        gear_row = (gear_id)
-        obj = self.__factory.create_gear_by_id(gear_type, gear_id)
+    def save(self, obj: Gear) -> None:
         sql = f"""INSERT INTO  inventory (ID, gear_type, condition_ratings, maintenance_records, is_avail)
         VALUES (?,?,?,?,?)
         """
@@ -29,7 +26,7 @@ class InventoryRepository(Repository):
         row_id, gear_type, condition_ratings, maintenance_records, is_avail = obj[0]
         gear = self.__factory.create_gear_by_tuple(gear_type, obj[0])
         return gear
-    def find_all(self) -> None:
+    def find_all(self) -> list:
         sql = f"""SELECT * from inventory"""
         gear_datas = self.__db.db_query(sql, params = [])
         gears = []
@@ -41,7 +38,7 @@ class InventoryRepository(Repository):
         obj = self.find_by_id(obj_id)
         if not obj:
             return None
-        fix_data = input("Which part do you want to update (condition_ratings, maintenance_records, status)")
+        fix_data = input("Which part do you want to update (condition_ratings, maintenance_records, is_avail)")
         value = input("Value = ")
         sql = f"""UPDATE inventory
                     SET {fix_data} = ?
@@ -89,7 +86,7 @@ class CustomerRepository(Repository):
         sql = """SELECT * FROM customer"""
         customer_datas = self.__db.db_query(sql, params=[])
         customers = []
-        for customer in customers:
+        for customer in customer_datas:
             customers.append(Customer.from_row(customer))
         return customers
 
@@ -157,13 +154,14 @@ class GuideRepository(Repository):
         customer = Guide.from_row(row)
         return customer
 
-    def find_all(self) -> None:
+    def find_all(self) -> list:
         sql = """SELECT ID FROM guide"""
         guide_ids = self.__db.db_query(sql, params=[])
+        guides = []
         for guide_id in guide_ids:
             guide = self.find_by_id(guide_id[0])
-            print(guide)
-            print()
+            guides.append(guide)
+        return guides
 
     def update(self, obj_id) -> None:
         sql = """ """
@@ -206,18 +204,21 @@ class GuideRepository(Repository):
 class ExpeditionReservationRepository(Repository):
     def __init__(self) -> None:
         self.__db = Database("expedition.db")
-        self.__db_guide = GuideRepository() 
-        self.__columns = {"ID": "TEXT PRIMARY KEY", "season_name": "TEXT", "start_date": "TEXT", "end_date": "TEXT", "activity_description": "TEXT", "max_capacity": "INTEGER", "guide": "TEXT"}
+        self.__db_guide = GuideRepository()
+        self.__factory = ExpeditionFactory()
+        self.__columns = {"ID": "TEXT PRIMARY KEY", "season_name": "TEXT", "start_date": "TEXT", "end_date": "TEXT", "activity_description": "TEXT", "max_capacity": "INTEGER", "guide": "TEXT", "difficulty": "TEXT"}
         self.__db.create_tables("expedition", self.__columns)
 
     def save(self, obj: ExpeditionWindow) -> None:
         id, season_name, start_date, end_date, activity_description, max_capacity, guide = obj.to_row()
         guide_id = obj.guide.id
         sql = """
-        INSERT INTO expedition (ID, season_name, start_date, end_date, activity_description, max_capacity, guide)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO expedition (ID, season_name, start_date, end_date, activity_description, max_capacity, guide, difficulty)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """
-        self.__db.db_query(sql, (id, season_name, start_date, end_date, activity_description, max_capacity, guide_id))
+        difficulties = obj.get_difficulty_names()
+        difficulty = ",".join(difficulties)
+        self.__db.db_query(sql, (id, season_name, start_date, end_date, activity_description, max_capacity, guide_id, difficulty))
         print("Add new expedition reservation successfully!")
 
     def find_by_id(self, obj_id) -> ExpeditionWindow|None:
@@ -228,10 +229,15 @@ class ExpeditionReservationRepository(Repository):
         obj = self.__db.db_query(sql, (obj_id, ))
         if len(obj) == 0:
             return None
-        id, season_name, start_date, end_date, activity_description, max_capacity, guide_id = obj[0]
+        id, season_name, start_date, end_date, activity_description, max_capacity, guide_id, difficulty = obj[0]
         guide = self.__db_guide.find_by_id(guide_id)
         expedition_window = ExpeditionWindow(season_name, start_date, end_date, activity_description, max_capacity, guide, id)
-        return expedition_window
+        return self.__add_difficulty(expedition_window, difficulty)
+
+    def __add_difficulty(self, window: ExpeditionWindow, difficulty: str) -> ExpeditionWindow:
+        if difficulty == "":
+            return window
+        return self.__factory.create_trip_by_names(difficulty.split(","), window)
 
     def find_all(self) -> list:
         sql = """
@@ -240,17 +246,17 @@ class ExpeditionReservationRepository(Repository):
         expedition_windows = []
         expedition_data = self.__db.db_query(sql, params= [])
         for expedition in expedition_data:
-            id, season_name, start_date, end_date, activity_description, max_capacity, guide_id = expedition
+            id, season_name, start_date, end_date, activity_description, max_capacity, guide_id, difficulty = expedition
             guide = self.__db_guide.find_by_id(guide_id)
             expedition_window = ExpeditionWindow(season_name, start_date, end_date, activity_description, max_capacity, guide, id)
-            expedition_windows.append(expedition_window)
+            expedition_windows.append(self.__add_difficulty(expedition_window, difficulty))
         return expedition_windows
 
     def update(self, obj_id) -> None:
         obj = self.find_by_id(obj_id)
         if not obj:
             return None
-        fix_data = input("Which part do you want to update (season_name, start_date, end_date, activity_description, max_capacity, guide)")
+        fix_data = input("Which part do you want to update (season_name, start_date, end_date, activity_description, max_capacity, guide, difficulty)")
         sql = f"""
         UPDATE expedition
         SET {fix_data} = ?
@@ -262,7 +268,6 @@ class ExpeditionReservationRepository(Repository):
             self.__db.db_query(sql, (value, obj_id))
             print("Update successfully!")
             return None
-    
         self.__db.db_query(sql, (value, obj_id))
         print("Update successfully")
         return None
@@ -382,10 +387,10 @@ class ReservationRepository(Repository):
         customer = self.__db_customer.find_by_id(customer_id)
         expedition_reservation = self.__db_expedition.find_by_id(expedition_reservation_id) 
         gear_requests = []
-        gear_request_ids = gear_request_ids.split(",")
-        for gear_request_id in gear_request_ids:
-            gear_request: GearRequest = self.__db_gear_request.find_by_id(gear_request_id)
-            gear_requests.append(gear_request)
+        if gear_request_ids != "":
+            for gear_request_id in gear_request_ids.split(","):
+                gear_request: GearRequest = self.__db_gear_request.find_by_id(gear_request_id)
+                gear_requests.append(gear_request)
         return Reservation(customer, expedition_reservation, gear_requests, created_at, ReservationStatus(status), id)
     
     def find_all(self) -> list:
@@ -399,10 +404,10 @@ class ReservationRepository(Repository):
             customer = self.__db_customer.find_by_id(customer_id)
             expedition_reservation = self.__db_expedition.find_by_id(expedition_reservation_id) 
             gear_requests = []
-            gear_request_ids = gear_request_ids.split(",")
-            for gear_request_id in gear_request_ids:
-                gear_request: GearRequest = self.__db_gear_request.find_by_id(gear_request_id)
-                gear_requests.append(gear_request)
+            if gear_request_ids != "":
+                for gear_request_id in gear_request_ids.split(","):
+                    gear_request: GearRequest = self.__db_gear_request.find_by_id(gear_request_id)
+                    gear_requests.append(gear_request)
             reservations.append(Reservation(customer, expedition_reservation, gear_requests, created_at, ReservationStatus(status), id))
         return reservations
 
@@ -436,24 +441,31 @@ class ReservationRepository(Repository):
 def main():
     repo = InventoryRepository()
 
-    # # save dummy gears
-    # repo.save("rope")
-    # repo.save("tent")
-    # repo.save("beacon")
+    # save dummy gears (the factory creates them, main keeps them)
+    factory = InventoryFactory()
+    rope = factory.create_gear_by_id("rope")
+    rope2 = factory.create_gear_by_id("rope")
+    tent = factory.create_gear_by_id("tent")
+    repo.save(rope)
+    repo.save(rope2)
+    repo.save(tent)
 
-    # # show all gears
-    # repo.find_all()
+    # show all gears
+    for gear in repo.find_all():
+        print(gear.to_row())
 
-    # # find one gear by a dummy ID
-    # gear = repo.find_by_id("rope001")
-    # print(gear)
+    # find one gear by ID
+    gear = repo.find_by_id(rope.to_row()[0])
+    if gear:
+        print(gear.to_row())
 
-    # # update a dummy gear (asks for the field and value)
-    # repo.update("rope001")
+    # update a gear (asks for the field and value)
+    repo.update(rope.to_row()[0])
 
-    # # delete a dummy gear
-    # repo.delete("rope001")
-    # repo.find_all()
+    # delete a gear
+    repo.delete(rope2.to_row()[0])
+    for gear in repo.find_all():
+        print(gear.to_row())
 
     customer_repo = CustomerRepository()
 
@@ -486,7 +498,9 @@ def main():
     guide_repo.save(lan)
 
     # show all guides
-    guide_repo.find_all()
+    for guide in guide_repo.find_all():
+        print(guide)
+        print()
 
     # find one guide by ID
     guide = guide_repo.find_by_id(minh.id)
@@ -497,7 +511,9 @@ def main():
 
     # delete a guide
     guide_repo.delete(lan.id)
-    guide_repo.find_all()
+    for guide in guide_repo.find_all():
+        print(guide)
+        print()
 
     expedition_repo = ExpeditionReservationRepository()
 
