@@ -20,17 +20,19 @@ class Gear:
         self.__id = id
         self.__gear_type = gear_type
         self.__condition_ratings = condition_ratings
-        self.__maintenance_records = []
-        for record in maintenance_records:
-            self.__maintenance_records.append(record)
-        self.__is_avail = is_avail  
+        # records are kept as one text, one record per line
+        self.__maintenance_records = maintenance_records
+        self.__is_avail = is_avail
 
     def update_condition(self, rating: float) -> None:
         self.__condition_ratings = rating
         print(f"Update condition rating successfully")
 
     def add_maintenance_record(self, record: str) -> None:
-        self.__maintenance_records += f"\n" + record
+        if self.__maintenance_records == "":
+            self.__maintenance_records = record
+        else:
+            self.__maintenance_records += f"\n" + record
         print(f"Add a new maintenance record successfully")
 
     def set_available(self, avail: bool) -> None:

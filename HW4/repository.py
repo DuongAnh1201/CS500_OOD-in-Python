@@ -1,4 +1,3 @@
-from pickle import TRUE
 from expedition import ExpeditionWindow
 from interface import Repository, GearRequestStatus, ReservationStatus
 from database import Database
@@ -19,8 +18,7 @@ class InventoryRepository(Repository):
         VALUES (?,?,?,?,?)
         """
         row_id, gear_type, condition_ratings, maintenance_records, is_avail = obj.to_row()
-        # sqlite cannot store a list, so save the records as text
-        self.__db.db_query(sql, (row_id, gear_type, condition_ratings, str(maintenance_records), is_avail))
+        self.__db.db_query(sql, (row_id, gear_type, condition_ratings, maintenance_records, is_avail))
         print("Save new gear successfully")
 
     def find_by_id(self, obj_id) -> Gear|None:
@@ -28,15 +26,17 @@ class InventoryRepository(Repository):
         obj = self.__db.db_query(sql, (obj_id, ))
         if len(obj) == 0:
             return None
-        row_id, gear_type, condition_ratings, maintenance_records, is_avail = obj
-        gear = self.__factory.create_gear_by_tuple(gear_type, obj)
-        return gear[0]
+        row_id, gear_type, condition_ratings, maintenance_records, is_avail = obj[0]
+        gear = self.__factory.create_gear_by_tuple(gear_type, obj[0])
+        return gear
     def find_all(self) -> None:
         sql = f"""SELECT * from inventory"""
-        gears = self.__db.db_query(sql, params = [])
-        for gear in gears:
-            print(gear)
-
+        gear_datas = self.__db.db_query(sql, params = [])
+        gears = []
+        for gear_data in gear_datas:
+            row_id, gear_type, condition_ratings, maintenance_records, is_avail = gear_data
+            gears.append(self.__factory.create_gear_by_tuple(gear_type, gear_data))
+        return gears
     def update(self, obj_id) -> None:
         obj = self.find_by_id(obj_id)
         if not obj:
@@ -50,12 +50,12 @@ class InventoryRepository(Repository):
         if fix_data == "condition_ratings":
             value = float(value)
         
-        if fix_data == "status":
+        if fix_data == "is_avail":
             if value == "true":
-                value = TRUE
+                value = True
             elif value == "false":
                 value = False
-        self.__db.db_query(sql, (value,))
+        self.__db.db_query(sql, (value, obj_id))
         print("Update value successfully")
     
     def delete(self, obj_id) -> None:
@@ -87,9 +87,11 @@ class CustomerRepository(Repository):
     
     def find_all(self) -> None:
         sql = """SELECT * FROM customer"""
-        customers = self.__db.db_query(sql, params=[])
+        customer_datas = self.__db.db_query(sql, params=[])
+        customers = []
         for customer in customers:
-            print(customer)
+            customers.append(Customer.from_row(customer))
+        return customers
 
     def update(self, obj_id: str)-> None:
         obj = self.find_by_id(obj_id)
@@ -267,7 +269,7 @@ class ExpeditionReservationRepository(Repository):
         
     def delete(self, obj_id) -> None:
         sql = f"""
-        DELETE expedition
+        DELETE FROM expedition
         WHERE ID = ?
         """
         self.__db.db_query(sql, (obj_id, ))
