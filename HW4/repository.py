@@ -411,22 +411,19 @@ class ReservationRepository(Repository):
             reservations.append(Reservation(customer, expedition_reservation, gear_requests, created_at, ReservationStatus(status), id))
         return reservations
 
-    def update(self, obj_id) -> None:
-        obj = self.find_by_id(obj_id)
-        if not obj:
-            return None
-        fix_data = input("Which part do you want to update (customer, expedition_reservation, gear_requests, created_at, status)")
+    def update(self, obj:Reservation) -> None:
+        id, customer, expedition_reservation, gear_requests, created_at, status = obj.to_row()
         sql = f"""
-            UPDATE reservation
-            SET {fix_data} = ?
+            UPDATE reservation 
+            SET customer = ?, expedition_reservation = ?, gear_requests = ?, created_at = ?, status = ? 
             WHERE ID = ?
-        """
-        # customer and expedition_reservation take an ID, gear_requests takes IDs separated by commas
-        value = input("Value = ")
-        # check the status through the enum so a typo is not saved
-        if fix_data == "status":
-            value = ReservationStatus(value).value
-        self.__db.db_query(sql, (value, obj_id))
+        """ 
+        gear_requests_id = []
+        if len(gear_requests) != 0:
+            for gear_request in gear_requests:
+                gear_requests_id.append(gear_request.id)
+        gear_requests_id = ",".join(gear_requests_id)
+        self.__db.db_query(sql, (customer.id, expedition_reservation.id, gear_requests_id, created_at, status.value, id))
         print("Update value successfully")
         return None
 
