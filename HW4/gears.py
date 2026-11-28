@@ -75,12 +75,14 @@ class Tent(Gear):
         return Tent(id, gear_type, condition_ratings, maintenance_records, is_avail)
 
 class GearRequest:
-    def __init__(self, id: str, gear_type: str, quantity: int, notes: str, status: GearRequestStatus.PENDING) -> None:
-        self.__id = id
+    def __init__(self, gear_type: str, quantity: int, notes: str, status: GearRequestStatus.PENDING, gear_request_id: str = "") -> None:
+        self.__id = "gear_request" + str(id(self))
         self.__gear_type = gear_type
         self.__quantity = quantity
         self.__notes = notes
         self.__status = status
+        if gear_request_id != "":
+            self.__id = gear_request_id
 
     def change_status(self, status: GearRequestStatus):
         old_status = self.__status
