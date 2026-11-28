@@ -78,19 +78,13 @@ class CustomerRepository(Repository):
             customers.append(Customer.from_row(customer))
         return customers
 
-    def update(self, obj_id: str)-> None:
-        obj = self.find_by_id(obj_id)
-        if not obj:
-            return None
-        fix_data = input("Which part do you want to update (first_name, last_name, age, phone, email)")
-        value = input("Value = ")
+    def update(self, obj: Customer)-> None:
+        id, first_name, last_name, age, phone, email = obj.to_row()
         sql = f"""UPDATE customer
-                    SET {fix_data} = ?
+                    SET first_name = ?, last_name = ?, age = ?, phone = ?, email = ?
                     WHERE ID = ?
                     """
-        if fix_data == "age":
-            value = int(value)
-        self.__db.db_query(sql, (value, obj_id))
+        self.__db.db_query(sql, (first_name, last_name, age, phone, email, id))
         print("Update value successfully")
 
     def delete(self, obj_id) -> None:
