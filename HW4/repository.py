@@ -1,4 +1,4 @@
-from expedition import ExpeditionWindow, ExpeditionFactory
+from expedition import ExpeditionWindow, ExpeditionFactory, GlacierTrip
 from interface import Repository, GearRequestStatus, ReservationStatus
 from database import Database
 from gears import Gear, GearRequest, InventoryFactory
@@ -8,14 +8,15 @@ class InventoryRepository(Repository):
     def __init__(self):
         self.__db = Database("inventory.db")
         self.__factory = InventoryFactory()
-        self.__columns = {"ID": "TEXT PRIMARY KEY", "gear_type": "TEXT","condition_ratings": "REAL", "maintenance_records": "TEXT", "is_avail": "BOOLEAN"}
+        self.__columns = {"ID": "TEXT PRIMARY KEY", "gear_type": "TEXT","condition_ratings": "REAL", "maintenance_records": "TEXT", "is_avail": "BOOLEAN", "booked_dates": "TEXT"}
         self.__db.create_tables("inventory", self.__columns)
     def save(self, obj: Gear) -> None:
-        sql = f"""INSERT INTO  inventory (ID, gear_type, condition_ratings, maintenance_records, is_avail)
-        VALUES (?,?,?,?,?)
+        sql = f"""INSERT INTO  inventory (ID, gear_type, condition_ratings, maintenance_records, is_avail, booked_dates)
+        VALUES (?,?,?,?,?,?)
         """
-        row_id, gear_type, condition_ratings, maintenance_records, is_avail = obj.to_row()
-        self.__db.db_query(sql, (row_id, gear_type, condition_ratings, maintenance_records, is_avail))
+        row_id, gear_type, condition_ratings, maintenance_records, is_avail, booked_dates = obj.to_row()
+        # booked days are saved as text separated by commas, e.g. "2026-12-01,2026-12-02"
+        self.__db.db_query(sql, (row_id, gear_type, condition_ratings, maintenance_records, is_avail, ",".join(booked_dates)))
         print("Save new gear successfully")
 
     def find_by_id(self, obj_id) -> Gear|None:
@@ -23,24 +24,33 @@ class InventoryRepository(Repository):
         obj = self.__db.db_query(sql, (obj_id, ))
         if len(obj) == 0:
             return None
-        row_id, gear_type, condition_ratings, maintenance_records, is_avail = obj[0]
-        gear = self.__factory.create_gear_by_tuple(gear_type, obj[0])
-        return gear
+        return self.__to_gear(obj[0])
+
     def find_all(self) -> list:
         sql = f"""SELECT * from inventory"""
         gear_datas = self.__db.db_query(sql, params = [])
         gears = []
         for gear_data in gear_datas:
-            row_id, gear_type, condition_ratings, maintenance_records, is_avail = gear_data
-            gears.append(self.__factory.create_gear_by_tuple(gear_type, gear_data))
+            gears.append(self.__to_gear(gear_data))
         return gears
+
+    def __to_gear(self, gear_data: tuple) -> Gear|None:
+        '''turn a database row into a Gear, with booked_dates back as a list'''
+        row_id, gear_type, condition_ratings, maintenance_records, is_avail, booked_dates = gear_data
+        dates = []
+        if booked_dates != "":
+            for date in booked_dates.split(","):
+                dates.append(date)
+        row = (row_id, gear_type, condition_ratings, maintenance_records, is_avail, dates)
+        return self.__factory.create_gear_by_tuple(gear_type, row)
+
     def update(self, obj: Gear) -> None:
-        id, gear_type, condition_ratings, maintenance_records, is_avail = obj.to_row()
+        id, gear_type, condition_ratings, maintenance_records, is_avail, booked_dates = obj.to_row()
         sql = f"""UPDATE inventory
-                    SET gear_type = ?, condition_ratings = ?, maintenance_records = ?, is_avail = ?
+                    SET gear_type = ?, condition_ratings = ?, maintenance_records = ?, is_avail = ?, booked_dates = ?
                     WHERE ID = ?
                     """
-        self.__db.db_query(sql, (gear_type, condition_ratings, maintenance_records, is_avail, id))
+        self.__db.db_query(sql, (gear_type, condition_ratings, maintenance_records, is_avail, ",".join(booked_dates), id))
         print("Update value successfully")
     
     def delete(self, obj_id) -> None:
@@ -149,7 +159,7 @@ class GuideRepository(Repository):
         id, first_name, last_name, age, phone, certified, technical_skills, daily_avail = obj.to_row()
         self.delete(id)
         self.save(obj)
-        
+        print("Update successfully")
         
         
 
@@ -403,8 +413,12 @@ def main():
     if gear:
         print(gear.to_row())
 
-    # update a gear (asks for the field and value)
-    repo.update(rope.to_row()[0])
+    # update a gear: change it, book it for two days, then save it
+    rope.update_condition(3.5)
+    rope.book(["2026-12-01", "2026-12-02"])
+    repo.update(rope)
+    print(repo.find_by_id(rope.to_row()[0]).to_row())
+    print("free on 2026-12-01:", repo.find_by_id(rope.to_row()[0]).is_free(["2026-12-01"]))
 
     # delete a gear
     repo.delete(rope2.to_row()[0])
@@ -426,8 +440,8 @@ def main():
     customer = customer_repo.find_by_id(anna.id)
     print(customer)
 
-    # update a customer (asks for the field and value)
-    customer_repo.update(anna.id)
+    # update a customer (Customer has no setters yet, so the same values are saved again)
+    customer_repo.update(anna)
 
     # delete a customer
     customer_repo.delete(ben.id)
@@ -450,8 +464,11 @@ def main():
     guide = guide_repo.find_by_id(minh.id)
     print(guide)
 
-    # update a guide (asks for the field and value)
-    guide_repo.update(minh.id)
+    # update a guide: add a skill and a day, then save it
+    minh.add_technical_skill("crevasse rescue", "intermediate")
+    minh.add_availability("2026-12-03")
+    guide_repo.update(minh)
+    print(guide_repo.find_by_id(minh.id))
 
     # delete a guide
     guide_repo.delete(lan.id)
@@ -476,8 +493,10 @@ def main():
     if expedition:
         print(expedition.to_row())
 
-    # update an expedition (asks for the field and value)
-    expedition_repo.update(winter.id)
+    # update an expedition: make it a glacier trip, then save it
+    winter = GlacierTrip(winter)
+    expedition_repo.update(winter)
+    print(expedition_repo.find_by_id(winter.id).get_difficulty_names())
 
     gear_request_repo = GearRequestRepository()
 
@@ -496,8 +515,10 @@ def main():
     gear_request = gear_request_repo.find_by_id(rope_request.id)
     print(gear_request)
 
-    # update a gear request (asks for the field and value)
-    gear_request_repo.update(rope_request.id)
+    # update a gear request: approve it, then save it
+    rope_request.change_status(GearRequestStatus.APPROVED)
+    gear_request_repo.update(rope_request)
+    print(gear_request_repo.find_by_id(rope_request.id))
 
     reservation_repo = ReservationRepository()
 
@@ -514,8 +535,10 @@ def main():
     if reservation:
         print(reservation.to_row())
 
-    # update a reservation (asks for the field and value)
-    reservation_repo.update(anna_reservation.id)
+    # update a reservation: confirm it, then save it
+    anna_reservation.change_status(ReservationStatus.CONFIRMED)
+    reservation_repo.update(anna_reservation)
+    print(reservation_repo.find_by_id(anna_reservation.id).to_row()[5])
 
     # delete everything created by these tests
     reservation_repo.delete(anna_reservation.id)
