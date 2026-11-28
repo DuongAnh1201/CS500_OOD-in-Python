@@ -43,7 +43,7 @@ class Person:
     
 class Guide(Person):
     def __init__(self, id, first_name: str, last_name: str, age: int, phone: str, certified: str, technical_skills: dict[str, str], daily_avail: list[str]) -> None:
-        super().__init__()
+        super().__init__(first_name, last_name, age, phone, id)
         self.__certified = certified
         self.__technical_skills = {}
         for skill, level in technical_skills.items():
@@ -51,6 +51,18 @@ class Guide(Person):
         self.__daily_avail = []
         for date in daily_avail:
             self.__daily_avail.append(date)
+
+    @property
+    def certified(self):
+        return self.__certified
+
+    @property
+    def technical_skills(self):
+        return self.__technical_skills
+
+    @property
+    def daily_avail(self):
+        return self.__daily_avail
 
     def add_technical_skill(self, skill: str, level: str) -> None:
         self.__technical_skills[skill] = level
@@ -89,11 +101,11 @@ class Guide(Person):
         return False
 
     def to_row(self) -> tuple:
-        guide = (self.id, self.__first_name, self.__last_name, self.__age, self.__phone, self.__certified, self.__technical_skills, self.__daily_avail)
+        guide = (self.id, self.first_name, self.last_name, self.age, self.phone, self.certified, self.technical_skills, self.daily_avail)
         return guide
 
     @staticmethod
-    def from_row(self, guide):
+    def from_row(guide):
         id, first_name, last_name, age, phone, certified, technical_skills, daily_avail = guide
         return Guide(id, first_name, last_name, age, phone, certified, technical_skills, daily_avail)
     
