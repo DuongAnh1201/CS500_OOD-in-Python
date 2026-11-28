@@ -16,13 +16,15 @@ from interface import GearRequestStatus
 #         return MaintenanceRecord(id, date, description, performed_by)
 
 class Gear:
-    def __init__(self, id: str, gear_type: str, condition_ratings: float = 5, maintenance_records: str = "", is_avail: bool = True)-> None:
-        self.__id = id
+    def __init__(self, gear_type: str, condition_ratings: float = 5, maintenance_records: str = "", is_avail: bool = True, gear_id: str = "")-> None:
+        self.__id = "gear" + str(id(self))
         self.__gear_type = gear_type
         self.__condition_ratings = condition_ratings
         # records are kept as one text, one record per line
         self.__maintenance_records = maintenance_records
         self.__is_avail = is_avail
+        if gear_id!= "":
+            self.__id = gear_id
 
     def update_condition(self, rating: float) -> None:
         self.__condition_ratings = rating
@@ -44,37 +46,37 @@ class Gear:
         return gear
 
 class Rope(Gear):
-    def __init__(self, id: str, gear_type: str = "rope", condition_ratings: float = 5, maintenance_records: str = "", is_avail: bool = True) -> None:
-        super().__init__(id, gear_type, condition_ratings, maintenance_records, is_avail)
+    def __init__(self, gear_type: str = "rope", condition_ratings: float = 5, maintenance_records: str = "", is_avail: bool = True, gear_id: str = "") -> None:
+        super().__init__(gear_type, condition_ratings, maintenance_records, is_avail, gear_id)
         
     @staticmethod
     def from_row(row: tuple):
         id, gear_type, condition_ratings, maintenance_records, is_avail = row
-        return Rope(id, gear_type, condition_ratings, maintenance_records, is_avail)
+        return Rope(gear_type, condition_ratings, maintenance_records, is_avail, id)
 
 class Crampon(Gear):
-    def __init__(self, id: str, gear_type: str = "crampon", condition_ratings: float = 5, maintenance_records: str = "", is_avail: bool = True) -> None:
-        super().__init__(id, gear_type, condition_ratings, maintenance_records, is_avail)
+    def __init__(self, gear_type: str = "crampon", condition_ratings: float = 5, maintenance_records: str = "", is_avail: bool = True, gear_id: str = "") -> None:
+        super().__init__(gear_type, condition_ratings, maintenance_records, is_avail, gear_id)
     @staticmethod
     def from_row(row: tuple):
         id, gear_type, condition_ratings, maintenance_records, is_avail = row
-        return Crampon(id,gear_type, condition_ratings, maintenance_records, is_avail)
+        return Crampon(gear_type, condition_ratings, maintenance_records, is_avail, id)
 
 class Beacon(Gear):
-    def __init__(self, id: str, gear_type: str = "beacon", condition_ratings: float = 5, maintenance_records: str = "", is_avail: bool = True) -> None:
-        super().__init__(id, gear_type, condition_ratings, maintenance_records, is_avail)
+    def __init__(self, gear_type: str = "beacon", condition_ratings: float = 5, maintenance_records: str = "", is_avail: bool = True, gear_id: str = "") -> None:
+        super().__init__(gear_type, condition_ratings, maintenance_records, is_avail, gear_id)
     @staticmethod
     def from_row(row: tuple):
         id, gear_type, condition_ratings, maintenance_records, is_avail = row
-        return Beacon(id, gear_type, condition_ratings, maintenance_records, is_avail)
+        return Beacon(gear_type, condition_ratings, maintenance_records, is_avail, id)
 
 class Tent(Gear):
-    def __init__(self, id: str, gear_type: str = "tent", condition_ratings: float = 5, maintenance_records: str = "", is_avail: bool = True) -> None:
-        super().__init__(id, gear_type, condition_ratings, maintenance_records, is_avail)
+    def __init__(self, gear_type: str = "tent", condition_ratings: float = 5, maintenance_records: str = "", is_avail: bool = True, gear_id: str = "") -> None:
+        super().__init__(gear_type, condition_ratings, maintenance_records, is_avail, gear_id)
     @staticmethod
     def from_row(row: tuple):
         id, gear_type, condition_ratings, maintenance_records, is_avail = row
-        return Tent(id, gear_type, condition_ratings, maintenance_records, is_avail)
+        return Tent(gear_type, condition_ratings, maintenance_records, is_avail, id)
 
 class GearRequest:
     def __init__(self, gear_type: str, quantity: int, notes: str, status: GearRequestStatus.PENDING, gear_request_id: str = "") -> None:
@@ -98,7 +100,7 @@ class GearRequest:
     @staticmethod
     def from_row(request: tuple):
         id, gear_type, quantity, notes, status = request
-        return GearRequest(id, gear_type, quantity, notes, status)
+        return GearRequest(gear_type, quantity, notes, status, id)
 
     @property
     def id(self):
@@ -111,10 +113,11 @@ class InventoryFactory:
     def __init__(self):
         self.__gear_classes: dict[str, type] = {"rope": Rope, "crampon": Crampon, "beacon": Beacon, "tent": Tent}
     
-    def create_gear_by_id(self, gear_type: str, gear_id: str) -> None|Gear:
+    def create_gear_by_id(self, gear_type: str, gear_id: str = "") -> None|Gear:
+        '''leave gear_id empty for a new gear, so Gear makes a unique ID'''
         gear = None
         if gear_type in self.__gear_classes:
-            gear = self.__gear_classes[gear_type](gear_id)
+            gear = self.__gear_classes[gear_type](gear_id=gear_id)
         return gear
 
     def create_gear_by_tuple(self, gear_type: str, tuple) -> None|Gear:
