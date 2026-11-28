@@ -145,33 +145,13 @@ class GuideRepository(Repository):
             guides.append(guide)
         return guides
 
-    def update(self, obj_id) -> None:
-        sql = """ """
-        obj = self.find_by_id(obj_id)
-        if not obj:
-            return None
-        fix_data = input("Which part do you want to update (first_name, last_name, age, phone, certified, daily_avail, technical_skills)")
-        # skills live in their own table: add a new skill or change its level
-        if fix_data == "technical_skills":
-            skill = input("Skill = ")
-            level = input("Level = ")
-            sql = """INSERT OR REPLACE INTO guide_skills (guide_id, skill, level)
-                    VALUES (?, ?, ?)"""
-            self.__db.db_query(sql, (obj_id, skill, level))
-            print("Update value successfully")
-            return None
-        value = input("Value = ")
-        sql = f"""UPDATE guide
-                    SET {fix_data} = ?
-                    WHERE ID = ?
-                    """
-        if fix_data == "age":
-            value = int(value)
-        if fix_data == "certified":
-            value = value == "True"
-        # daily_avail is typed as dates separated by commas, e.g. 2026-12-01,2026-12-02
-        self.__db.db_query(sql, (value, obj_id))
-        print("Update value successfully")
+    def update(self, obj: Guide) -> None:
+        id, first_name, last_name, age, phone, certified, technical_skills, daily_avail = obj.to_row()
+        self.delete(id)
+        self.save(obj)
+        
+        
+        
 
     def delete(self, obj_id) -> None:
         # delete the skills first, then the guide
@@ -234,23 +214,17 @@ class ExpeditionReservationRepository(Repository):
             expedition_windows.append(self.__add_difficulty(expedition_window, difficulty))
         return expedition_windows
 
-    def update(self, obj_id) -> None:
-        obj = self.find_by_id(obj_id)
-        if not obj:
-            return None
-        fix_data = input("Which part do you want to update (season_name, start_date, end_date, activity_description, max_capacity, guide, difficulty)")
+    def update(self, obj: ExpeditionWindow) -> None:
+        id, season_name, start_date, end_date, activity_description, max_capacity, guide = obj.to_row()
+        difficulty = obj.get_difficulty_names()
+        
         sql = f"""
         UPDATE expedition
-        SET {fix_data} = ?
+        SET season_name = ?, start_date = ?, end_date = ?, activity_description = ?, max_capacity = ?, guide = ?, difficulty = ?
         WHERE ID = ?
         """
-        value = input("Value: ")
-        if fix_data == 'max_capacity':
-            value = int(value)
-            self.__db.db_query(sql, (value, obj_id))
-            print("Update successfully!")
-            return None
-        self.__db.db_query(sql, (value, obj_id))
+        
+        self.__db.db_query(sql, (season_name, start_date, end_date, activity_description, max_capacity, guide.id, ",".join(difficulty), id))
         print("Update successfully")
         return None
         
@@ -305,23 +279,14 @@ class GearRequestRepository(Repository):
 
         return gear_requests
 
-    def update(self, obj_id):
-        fix_data = input("Which part do you want to update (gear_type, quantity, notes, status)")
+    def update(self, obj):
+        id, gear_type, quantity, notes, status = obj.to_row()
         sql = f"""
         UPDATE gear_request
-        SET {fix_data} = ?
+        SET gear_type = ?, quantity = ?, notes = ?, status = ?
         WHERE ID = ?
         """
-        value = input("Value = ")
-        if fix_data == "quantity":
-            value = int(value)
-            self.__db.db_query(sql, (value, obj_id))
-            print("Update successfully")
-            return None
-        # check the status through the enum so a typo is not saved
-        if fix_data == "status":
-            value = GearRequestStatus(value).value
-        self.__db.db_query(sql, (value, obj_id))
+        self.__db.db_query(sql, (gear_type, quantity, notes, status.value, id))
         print("Update successfully!")
         return None
 
