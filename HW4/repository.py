@@ -1,5 +1,5 @@
-from HW4.expedition import ExpeditionWindow
-from interface import Repository
+from expedition import ExpeditionWindow
+from interface import Repository, GearRequestStatus, ReservationStatus
 from database import Database
 from gears import Gear, GearRequest, InventoryFactory
 from person import Customer, Guide, Person
@@ -206,9 +206,9 @@ class ExpeditionReservationRepository(Repository):
         guide_id = obj.guide.id
         sql = """
         INSERT INTO expedition (ID, season_name, start_date, end_date, activity_description, max_capacity, guide)
-        VALEUS (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """
-        self.__db.db_query(sql, (id, season_name, start_date, end_date, activity_description, max_capacity, guide))
+        self.__db.db_query(sql, (id, season_name, start_date, end_date, activity_description, max_capacity, guide_id))
         print("Add new expedition reservation successfully!")
 
     def find_by_id(self, obj_id) -> ExpeditionWindow|None:
@@ -258,6 +258,15 @@ class ExpeditionReservationRepository(Repository):
         print("Update successfully")
         return None
         
+    def delete(self, obj_id) -> None:
+        sql = f"""
+        DELETE expedition
+        WHERE ID = ?
+        """
+        self.__db.db_query(sql, (obj_id, ))
+        print("Delete successfully")
+
+    
 
 class GearRequestRepository(Repository):
     def __init__(self):
@@ -273,7 +282,7 @@ class GearRequestRepository(Repository):
         """
 
         id, gear_type, quantity, notes, status = obj.to_row()
-        self.__db.db_query(sql, (id, gear_type, quantity, notes, status))
+        self.__db.db_query(sql, (id, gear_type, quantity, notes, status.value))
         print("Save successfully!")
 
     def find_by_id(self, obj_id) -> GearRequest|None:
@@ -346,7 +355,7 @@ class ReservationRepository(Repository):
         INSERT INTO reservation (ID, customer, expedition_reservation, gear_requests, created_at, status)
         VALUES (?, ?, ?, ?, ?, ?)
         """
-        self.__db.db_query(sql, (id, customer_id, expedition_reservation_id, gear_request_ids, created_at, status))
+        self.__db.db_query(sql, (id, customer_id, expedition_reservation_id, ",".join(gear_request_ids), created_at, status.value))
         print("Saved successfully")
 
     def find_by_id(self, obj_id):
@@ -359,7 +368,7 @@ class ReservationRepository(Repository):
             return None
         id, customer_id, expedition_reservation_id, gear_request_ids, created_at, status = obj[0]
         customer = self.__db_customer.find_by_id(customer_id)
-        expedition_reservation = self.__db__expedition.find_by_id(expedition_reservation_id) 
+        expedition_reservation = self.__db_expedition.find_by_id(expedition_reservation_id) 
         gear_requests = []
         gear_request_ids = gear_request_ids.split(",")
         for gear_request_id in gear_request_ids:
@@ -376,20 +385,20 @@ class ReservationRepository(Repository):
         for reservation in reservation_data:
             id, customer_id, expedition_reservation_id, gear_request_ids, created_at, status = reservation
             customer = self.__db_customer.find_by_id(customer_id)
-            expedition_reservation = self.__db__expedition.find_by_id(expedition_reservation_id) 
+            expedition_reservation = self.__db_expedition.find_by_id(expedition_reservation_id) 
             gear_requests = []
             gear_request_ids = gear_request_ids.split(",")
             for gear_request_id in gear_request_ids:
                 gear_request: GearRequest = self.__db_gear_request.find_by_id(gear_request_id)
                 gear_requests.append(gear_request)
-            reservations.append(Reservation(customer, expedition_reservation, gear_request, created_at, status, id))
+            reservations.append(Reservation(customer, expedition_reservation, gear_requests, created_at, status, id))
         return reservations
 
     def update(self, obj_id) -> None:
         obj = self.find_by_id(obj_id)
         if not obj:
             return None
-        fix_data = input("Which part do you want to update (customer_id, expedition_reservation_id, gear_request_id, created_at, status)")
+        fix_data = input("Which part do you want to update (customer, expedition_reservation_id, gear_request_id, created_at, status)")
         sql = f"""
             UPDATE reservation
             SET {fix_data} = ?
@@ -472,6 +481,70 @@ def main():
     # delete a guide
     guide_repo.delete(lan.id)
     guide_repo.find_all()
+
+    expedition_repo = ExpeditionReservationRepository()
+
+    # save dummy expeditions (minh is already saved in the guide repo)
+    winter = ExpeditionWindow("Winter 2026", "2026-12-01", "2026-12-10", "Glacier trek", 8, minh)
+    spring = ExpeditionWindow("Spring 2027", "2027-03-15", "2027-03-20", "Ice climbing course", 5, minh)
+    expedition_repo.save(winter)
+    expedition_repo.save(spring)
+
+    # show all expeditions
+    for expedition in expedition_repo.find_all():
+        print(expedition.to_row())
+
+    # find one expedition by ID
+    expedition = expedition_repo.find_by_id(winter.id)
+    if expedition:
+        print(expedition.to_row())
+
+    # update an expedition (asks for the field and value)
+    expedition_repo.update(winter.id)
+
+    gear_request_repo = GearRequestRepository()
+
+    # save dummy gear requests
+    rope_request = GearRequest("rope", 2, "60m dynamic rope", GearRequestStatus.PENDING)
+    tent_request = GearRequest("tent", 1, "4-season tent", GearRequestStatus.PENDING)
+    gear_request_repo.save(rope_request)
+    gear_request_repo.save(tent_request)
+
+    # show all gear requests
+    for gear_request in gear_request_repo.find_all():
+        print(gear_request)
+        print()
+
+    # find one gear request by ID
+    gear_request = gear_request_repo.find_by_id(rope_request.id)
+    print(gear_request)
+
+    # update a gear request (asks for the field and value)
+    gear_request_repo.update(rope_request.id)
+
+    reservation_repo = ReservationRepository()
+
+    # save dummy reservations (anna, winter and the gear requests are already saved)
+    anna_reservation = Reservation(anna, winter, [rope_request, tent_request], "2026-11-27", ReservationStatus.PENDING)
+    reservation_repo.save(anna_reservation)
+
+    # show all reservations
+    for reservation in reservation_repo.find_all():
+        print(reservation.to_row())
+
+    # find one reservation by ID
+    reservation = reservation_repo.find_by_id(anna_reservation.id)
+    if reservation:
+        print(reservation.to_row())
+
+    # update a reservation (asks for the field and value)
+    reservation_repo.update(anna_reservation.id)
+
+    # delete everything created by these tests
+    reservation_repo.delete(anna_reservation.id)
+    gear_request_repo.delete(tent_request.id)
+    reservation_repo.find_all()
+    gear_request_repo.find_all()
 
 if __name__ == "__main__":
     main()
